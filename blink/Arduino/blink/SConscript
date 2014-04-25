@@ -1,0 +1,14 @@
+import re
+
+from arduino_build import ArduinoBuildContext
+import blink
+
+
+Import('sketch_build_root')
+
+context = ArduinoBuildContext(ARGUMENTS, build_root=sketch_build_root)
+arduino_hex = context.build(extra_sources=blink.get_sources(),
+                            register_upload=True,
+                            env_dict={'CPPPATH': blink.get_includes()})
+
+Export('arduino_hex')
