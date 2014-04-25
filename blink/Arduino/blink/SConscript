@@ -6,9 +6,10 @@ import blink
 
 Import('sketch_build_root')
 
-context = ArduinoBuildContext(ARGUMENTS, build_root=sketch_build_root)
-arduino_hex = context.build(extra_sources=blink.get_sources(),
-                            register_upload=True,
-                            env_dict={'CPPPATH': blink.get_includes()})
+build_context = ArduinoBuildContext(ARGUMENTS, build_root=sketch_build_root)
+arduino_hex = build_context.build(extra_sources=blink.get_sources(),
+                                  register_upload=True,
+                                  env_dict={'CPPPATH': blink.get_includes()})
 
+Export('build_context')
 Export('arduino_hex')

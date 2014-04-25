@@ -44,7 +44,8 @@ Export('sketch_build_root')
 SConscript('blink/Arduino/blink/SConscript')
 
 Import('arduino_hex')
+Import('build_context')
 
 # # Install compiled firmwares to `firmware` directory #
-firmware_path = path('blink').joinpath('firmware')
+firmware_path = path('blink').joinpath('firmware', build_context.ARDUINO_BOARD)
 package_hex = env.Install(firmware_path, arduino_hex)

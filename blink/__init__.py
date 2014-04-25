@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from path_helpers import path
 
 
@@ -64,5 +66,7 @@ def get_firmwares():
 
     [1]: http://arduino.cc/en/Main/arduinoBoardUno
     '''
-    return [f.abspath() for f in
-            package_path().joinpath('firmware').walkfiles('*.hex')]
+    return OrderedDict([(board_dir.name, [f.abspath() for f in
+                                          board_dir.walkfiles('*.hex')])
+                        for board_dir in
+                        package_path().joinpath('firmware').dirs()])
