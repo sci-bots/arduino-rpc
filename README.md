@@ -5,8 +5,8 @@ This project demonstrates how an Arduino sketch may be distributed as a Python p
 ## Programming sketch using `arduino_helpers` and `avr_helpers` ##
 
 Although not strict dependencies of the `blink` package, by using
-`arduino_helpers` and `avr_helpers`, we can easily flash the compiled `.hex`
-firmware files included in the `blink` package.
+[`arduino_helpers`][1] and [`avr_helpers`][2], we can easily flash the compiled
+`.hex` firmware files included in the `blink` package.
 
 For example:
 
@@ -48,3 +48,7 @@ For example:
     avrdude-x64: 1056 bytes of flash verified
 
     avrdude-x64 done.  Thank you.
+
+
+[1]: https://github.com/wheeler-microfluidics/arduino_helpers
+[2]: https://github.com/wheeler-microfluidics/avr_helpers
