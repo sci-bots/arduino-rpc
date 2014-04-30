@@ -1,0 +1,54 @@
+message EchoRequest {}
+message RAMSizeRequest {}
+message RAMDataSizeRequest {}
+message RAMBssSizeRequest {}
+message RAMHeapSizeRequest {}
+message RAMStackSizeRequest {}
+message RAMFreeRequest {}
+
+enum CommandType {
+  ECHO           = 2;
+  RAM_SIZE       = 3;
+  RAM_DATA_SIZE  = 4;
+  RAM_BSS_SIZE   = 5;
+  RAM_HEAP_SIZE  = 6;
+  RAM_STACK_SIZE = 7;
+  RAM_FREE       = 8;
+}
+
+
+message CommandRequest {
+  // Identifies which field is filled in.
+  required CommandType type = 1;
+
+  optional EchoRequest echo                   = 2;
+  optional RAMSizeRequest ram_size            = 3;
+  optional RAMDataSizeRequest ram_data_size   = 4;
+  optional RAMBssSizeRequest ram_bss_size     = 5;
+  optional RAMHeapSizeRequest ram_heap_size   = 6;
+  optional RAMStackSizeRequest ram_stack_size = 7;
+  optional RAMFreeRequest ram_free            = 8;
+}
+
+
+message EchoResponse {}
+message RAMSizeResponse { required uint32 result = 1; }
+message RAMDataSizeResponse { required uint32 result = 1; }
+message RAMBssSizeResponse { required uint32 result = 1; }
+message RAMHeapSizeResponse { required uint32 result = 1; }
+message RAMStackSizeResponse { required uint32 result = 1; }
+message RAMFreeResponse { required uint32 result = 1; }
+
+
+message CommandResponse {
+  // Identifies which field is filled in.
+  required CommandType type = 1;
+
+  optional EchoResponse echo                   = 2;
+  optional RAMSizeResponse ram_size            = 3;
+  optional RAMDataSizeResponse ram_data_size   = 4;
+  optional RAMBssSizeResponse ram_bss_size     = 5;
+  optional RAMHeapSizeResponse ram_heap_size   = 6;
+  optional RAMStackSizeResponse ram_stack_size = 7;
+  optional RAMFreeResponse ram_free            = 8;
+}

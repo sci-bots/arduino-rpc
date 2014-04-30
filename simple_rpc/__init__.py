@@ -14,6 +14,14 @@ def get_sketch_directory():
     return package_path().joinpath('Arduino', 'simple_rpc')
 
 
+def get_nanopb_directory():
+    return package_path().joinpath('libs', 'nanopb')
+
+
+def get_nano_code_directory():
+    return package_path().joinpath('protobuf', 'nano')
+
+
 def get_includes():
     '''
     Return directories containing the `simple_rpc` Arduino header
@@ -33,7 +41,8 @@ def get_includes():
         ...
 
     '''
-    return get_sketch_directory()
+    return [get_sketch_directory(), get_nano_code_directory(),
+            get_nanopb_directory()]
 
 
 def get_sources():
@@ -54,7 +63,9 @@ def get_sources():
         ...
 
     '''
-    return get_sketch_directory().files('*.c*')
+    return (get_sketch_directory().files('*.c*') +
+            get_nano_code_directory().files('*.c*') +
+            get_nanopb_directory().files('*.c*'))
 
 
 def get_firmwares():

@@ -12,7 +12,7 @@ simple_rpc_files = find_package_data(package='simple_rpc', where='simple_rpc',
                                      only_in_packages=False)
 pprint(simple_rpc_files)
 
-DEFAULT_ARDUINO_BOARDS = ['diecimila', 'uno', 'mega2560']
+DEFAULT_ARDUINO_BOARDS = ['mega2560']
 
 setup(name='wheeler.simple_rpc',
       version=version.getVersion(),
@@ -26,6 +26,23 @@ setup(name='wheeler.simple_rpc',
 
 
 @task
+def generate_nanopb_code():
+    nanopb_home = path('simple_rpc').joinpath('libs', 'nanopb').abspath()
+    output_dir = path('simple_rpc').joinpath('protobuf').abspath()
+    sh('cd %s; ./protoc.sh %s simple.proto .' % (output_dir, nanopb_home))
+
+
+@task
+@needs('generate_nanopb_code')
+def copy_nanopb_python_module():
+    code_dir = path('simple_rpc').joinpath('protobuf', 'py').abspath()
+    output_dir = path('simple_rpc').abspath()
+    for f in code_dir.files('*.py'):
+        f.copy(output_dir)
+
+
+@task
+@needs('copy_nanopb_python_module')
 @cmdopts([('sconsflags=', 'f', 'Flags to pass to SCons.'),
           ('boards=', 'b', 'Comma-separated list of board names to compile '
            'for (e.g., `uno`).')])
