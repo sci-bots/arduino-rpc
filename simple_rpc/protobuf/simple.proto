@@ -5,6 +5,10 @@ message RAMBssSizeRequest {}
 message RAMHeapSizeRequest {}
 message RAMStackSizeRequest {}
 message RAMFreeRequest {}
+message LEDOnRequest {}
+message LEDOffRequest {}
+message LEDStateRequest {}
+
 
 enum CommandType {
   ECHO           = 2;
@@ -14,6 +18,9 @@ enum CommandType {
   RAM_HEAP_SIZE  = 6;
   RAM_STACK_SIZE = 7;
   RAM_FREE       = 8;
+  LED_ON         = 9;
+  LED_OFF        = 10;
+  LED_STATE      = 11;
 }
 
 
@@ -28,6 +35,9 @@ message CommandRequest {
   optional RAMHeapSizeRequest ram_heap_size   = 6;
   optional RAMStackSizeRequest ram_stack_size = 7;
   optional RAMFreeRequest ram_free            = 8;
+  optional LEDOnRequest led_on                = 9;
+  optional LEDOffRequest led_off              = 10;
+  optional LEDStateRequest led_state          = 11;
 }
 
 
@@ -38,6 +48,9 @@ message RAMBssSizeResponse { required uint32 result = 1; }
 message RAMHeapSizeResponse { required uint32 result = 1; }
 message RAMStackSizeResponse { required uint32 result = 1; }
 message RAMFreeResponse { required uint32 result = 1; }
+message LEDOnResponse {}
+message LEDOffResponse {}
+message LEDStateResponse { required bool result = 1; }
 
 
 message CommandResponse {
@@ -51,4 +64,7 @@ message CommandResponse {
   optional RAMHeapSizeResponse ram_heap_size   = 6;
   optional RAMStackSizeResponse ram_stack_size = 7;
   optional RAMFreeResponse ram_free            = 8;
+  optional LEDOnResponse led_on                = 9;
+  optional LEDOffResponse led_off              = 10;
+  optional LEDStateResponse led_state          = 11;
 }

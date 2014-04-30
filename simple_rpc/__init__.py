@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+import nadamq
 from path_helpers import path
 
 
@@ -42,7 +43,7 @@ def get_includes():
 
     '''
     return [get_sketch_directory(), get_nano_code_directory(),
-            get_nanopb_directory()]
+            get_nanopb_directory()] + nadamq.get_includes()
 
 
 def get_sources():
@@ -65,7 +66,8 @@ def get_sources():
     '''
     return (get_sketch_directory().files('*.c*') +
             get_nano_code_directory().files('*.c*') +
-            get_nanopb_directory().files('*.c*'))
+            get_nanopb_directory().files('*.c*') +
+            nadamq.get_sources())
 
 
 def get_firmwares():

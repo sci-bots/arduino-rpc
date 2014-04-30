@@ -1,23 +1,35 @@
-/* # `blink` #
- * Turns on an LED on for one second, then off for one second, repeatedly.
- *
- * This example code is in the public domain.
- */
+#include "Memory.h"
+#include "PacketParser.h"
+#include "SimpleCommand.h"
+#include "packet_handler.h"
 
-// Pin 13 has an LED connected on most Arduino boards.
-// give it a name:
-int led = 13;
 
-// the setup routine runs once when you press reset:
+uint8_t protobuf[128];
+#define PACKET_SIZE   64
+uint8_t packet_buffer[PACKET_SIZE];
+char output_buffer[128];
+
+typedef CommandPacketHandler<Stream, CommandProcessor> Handler;
+typedef PacketReactor<PacketParser<FixedPacket>, Stream, Handler> Reactor;
+
+CommandProcessor command_processor;
+FixedPacket packet;
+/* `reactor` maintains parse state for a packet, and updates state one-byte
+ * at-a-time. */
+PacketParser<FixedPacket> parser;
+/* `handler` processes complete packets and sends response as necessary. */
+Handler handler(Serial, command_processor);
+/* `reactor` uses `parser` to parse packets from input stream and passes
+ * complete packets to `handler` for processing. */
+Reactor reactor(parser, Serial, handler);
+
 void setup() {
-  // initialize the digital pin as an output.
-  pinMode(led, OUTPUT);
+  packet.reset_buffer(PACKET_SIZE, &packet_buffer[0]);
+  parser.reset(&packet);
+  Serial.begin(115200);
 }
 
-// the loop routine runs over and over again forever:
 void loop() {
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);               // wait for a second
+  reactor.parse_available();
+  delay(50);
 }
