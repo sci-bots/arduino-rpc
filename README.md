@@ -1,54 +1,42 @@
-# `blink` #
+# `simple_rpc` #
 
-This project demonstrates how an Arduino sketch may be distributed as a Python package.
-
-## Programming sketch using `arduino_helpers` and `avr_helpers` ##
-
-Although not strict dependencies of the `blink` package, by using
-[`arduino_helpers`][1] and [`avr_helpers`][2], we can easily flash the compiled
-`.hex` firmware files included in the `blink` package.
-
-For example:
-
-    >>> import blink
-    >>> board = 'diecimila'
-    >>> firmware = blink.get_firmwares()[board][0]
-    >>> firmware.name
-    path('blink.hex')
-    >>> from arduino_helpers.context import ArduinoContext, Board, Uploader
-    >>> # For Ubuntu systems, Arduino IDE is installed at `/usr/share/arduino`.
-    >>> context = ArduinoContext('/usr/share/arduino')
-    >>> uploader = Uploader(Board(context, board))
-    >>> from avr_helpers import AvrDude
-    >>> # Automatically select port, by iterating through available serial
-    >>> # ports until a connection can be established.
-    >>> avr_dude = AvrDude(uploader.protocol, uploader.board_context.mcu, uploader.speed)
-    >>> stdout, stderr = avr_dude.flash(firmware, ['-D'])
-    >>> print stderr
-
-    avrdude-x64: AVR device initialized and ready to accept instructions
-
-    Reading | ################################################## | 100% 0.00s
-
-    avrdude-x64: Device signature = 0x1e9406
-    avrdude-x64: reading input file "blink.hex"
-    avrdude-x64: writing flash (1056 bytes):
-
-    Writing | ################################################## | 100% 0.76s
-
-    avrdude-x64: 1056 bytes of flash written
-    avrdude-x64: verifying flash memory against blink.hex:
-    avrdude-x64: load data flash data from input file blink.hex:
-    avrdude-x64: input file blink.hex contains 1056 bytes
-    avrdude-x64: reading on-chip flash data:
-
-    Reading | ################################################## | 100% 0.67s
-
-    avrdude-x64: verifying ...
-    avrdude-x64: 1056 bytes of flash verified
-
-    avrdude-x64 done.  Thank you.
+This project demonstrates a simple RPC interface to an Arduino device using
+methods that are automatically registered by a proxy class using command
+meta-data from Protocol buffer message definitions.
 
 
-[1]: https://github.com/wheeler-microfluidics/arduino_helpers
-[2]: https://github.com/wheeler-microfluidics/avr_helpers
+# API Example #
+
+Below, we show an example session interacting with the Arduino device through a
+serial stream.  Note that the `NodeProxy` is a generic class from the `nadamq`
+module, and that all `simple_rpc`-specific code is based entirely off of the
+Protocol Buffer definitions and the corresponding auto-generated Python message
+classes.
+
+    >>> from nadamq.command_proxy import (NodeProxy, CommandRequestManager,
+    ...                                   SerialStream)
+    >>> from simple_rpc.requests import (REQUEST_TYPES, CommandResponse,
+    ...                                  CommandRequest, CommandType)
+    >>> stream = SerialStream(‘/dev/ttyUSB0’, baudrate=115200)
+    >>> n = NodeProxy(CommandRequestManager(REQUEST_TYPES, CommandRequest,
+    ...                                     CommandResponse, CommandType),
+    ...               stream)
+    >>> n.
+    n.echo            n.led_on          n.ram_bss_size    n.ram_free        n.ram_size
+    n.led_off         n.led_state       n.ram_data_size   n.ram_heap_size   n.ram_stack_size
+    >>> n.ram_free()
+    6445
+    >>> n.ram_size()
+    8191
+    >>> n.led
+    n.led_off    n.led_on     n.led_state
+    >>> n.led_state()
+    False
+    >>> n.led_on()
+    <simple_rpc.simple_pb2.LEDOnResponse object at 0x7f2871aa4280>
+    >>> n.led_state()
+    True
+    >>> n.led_off()
+    <simple_rpc.simple_pb2.LEDOffResponse object at 0x7f2871aa43d0>
+    >>> n.led_state()
+    False
