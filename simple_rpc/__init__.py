@@ -9,17 +9,17 @@ def package_path():
 
 def get_sketch_directory():
     '''
-    Return directory containing the `blink` Arduino sketch.
+    Return directory containing the `simple_rpc` Arduino sketch.
     '''
-    return package_path().joinpath('Arduino', 'blink')
+    return package_path().joinpath('Arduino', 'simple_rpc')
 
 
 def get_includes():
     '''
-    Return directories containing the `blink` Arduino header
+    Return directories containing the `simple_rpc` Arduino header
     files.
 
-    Modules that need to compile against `blink` should use this
+    Modules that need to compile against `simple_rpc` should use this
     function to locate the appropriate include directories.
 
     Notes
@@ -27,9 +27,9 @@ def get_includes():
 
     For example:
 
-        import blink
+        import simple_rpc
         ...
-        print ' '.join(['-I%s' % i for i in blink.get_includes()])
+        print ' '.join(['-I%s' % i for i in simple_rpc.get_includes()])
         ...
 
     '''
@@ -38,9 +38,9 @@ def get_includes():
 
 def get_sources():
     '''
-    Return `blink` Arduino source file paths.
+    Return `simple_rpc` Arduino source file paths.
 
-    Modules that need to compile against `blink` should use this
+    Modules that need to compile against `simple_rpc` should use this
     function to locate the appropriate source files to compile.
 
     Notes
@@ -48,9 +48,9 @@ def get_sources():
 
     For example:
 
-        import blink
+        import simple_rpc
         ...
-        print ' '.join(blink.get_sources())
+        print ' '.join(simple_rpc.get_sources())
         ...
 
     '''
@@ -59,7 +59,7 @@ def get_sources():
 
 def get_firmwares():
     '''
-    Return `blink` compiled Arduino hex file paths.
+    Return `simple_rpc` compiled Arduino hex file paths.
 
     This function may be used to locate firmware binaries that are available
     for flashing to [Arduino Uno][1] boards.

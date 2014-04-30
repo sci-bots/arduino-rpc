@@ -6,23 +6,23 @@ from paver.setuputils import setup, find_package_data
 
 import version
 sys.path.append(path('.').abspath())
-import blink
+import simple_rpc
 
-blink_files = find_package_data(package='blink', where='blink',
-                                only_in_packages=False)
-pprint(blink_files)
+simple_rpc_files = find_package_data(package='simple_rpc', where='simple_rpc',
+                                     only_in_packages=False)
+pprint(simple_rpc_files)
 
 DEFAULT_ARDUINO_BOARDS = ['diecimila', 'uno', 'mega2560']
 
-setup(name='wheeler.blink',
+setup(name='wheeler.simple_rpc',
       version=version.getVersion(),
-      description='Example Arduino sketch packaged as Python package.',
+      description='Simple Arduino RPC node packaged as Python package.',
       author='Christian Fobel',
       author_email='christian@fobel.net',
-      url='http://github.com/wheeler-microfluidics/blink.git',
+      url='http://github.com/wheeler-microfluidics/simple_rpc.git',
       license='GPLv2',
-      packages=['blink'],
-      package_data=blink_files)
+      packages=['simple_rpc'],
+      package_data=simple_rpc_files)
 
 
 @task

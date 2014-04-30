@@ -4,3 +4,5 @@ RELEASE-VERSION
 *.pyc
 .ropeproject
 */Arduino/*/Config.h
+setup.py
+paver-minilib.zip

@@ -41,11 +41,11 @@ Import('PYTHON_LIB')
 # # Build Arduino binaries #
 sketch_build_root = path('build/arduino').abspath()
 Export('sketch_build_root')
-SConscript('blink/Arduino/blink/SConscript')
+SConscript('simple_rpc/Arduino/simple_rpc/SConscript')
 
 Import('arduino_hex')
 Import('build_context')
 
 # # Install compiled firmwares to `firmware` directory #
-firmware_path = path('blink').joinpath('firmware', build_context.ARDUINO_BOARD)
+firmware_path = path('simple_rpc').joinpath('firmware', build_context.ARDUINO_BOARD)
 package_hex = env.Install(firmware_path, arduino_hex)
