@@ -7,6 +7,7 @@ from paver.setuputils import setup, find_package_data
 import version
 sys.path.append(path('.').abspath())
 import simple_rpc
+from simple_rpc.proto import get_protobuf_definitions
 
 simple_rpc_files = find_package_data(package='simple_rpc', where='simple_rpc',
                                      only_in_packages=False)
@@ -26,6 +27,16 @@ setup(name='wheeler.simple_rpc',
 
 
 @task
+def generate_protobuf_definitions():
+    definition_str = get_protobuf_definitions()
+    output_dir = path('simple_rpc').joinpath('protobuf').abspath()
+    output_file = output_dir.joinpath('simple.proto')
+    with output_file.open('wb') as output:
+        output.write(definition_str)
+
+
+@task
+@needs('generate_protobuf_definitions')
 def generate_nanopb_code():
     nanopb_home = path('simple_rpc').joinpath('libs', 'nanopb').abspath()
     output_dir = path('simple_rpc').joinpath('protobuf').abspath()

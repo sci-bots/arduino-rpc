@@ -4,10 +4,8 @@
 #include "packet_handler.h"
 
 
-uint8_t protobuf[128];
-#define PACKET_SIZE   64
+#define PACKET_SIZE   128
 uint8_t packet_buffer[PACKET_SIZE];
-char output_buffer[128];
 
 typedef CommandPacketHandler<Stream, CommandProcessor> Handler;
 typedef PacketReactor<PacketParser<FixedPacket>, Stream, Handler> Reactor;
