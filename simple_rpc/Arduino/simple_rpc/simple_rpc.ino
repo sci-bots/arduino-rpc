@@ -29,5 +29,4 @@ void setup() {
 
 void loop() {
   reactor.parse_available();
-  delay(50);
 }
