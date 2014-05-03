@@ -6,33 +6,36 @@ from paver.setuputils import setup, find_package_data
 
 import version
 sys.path.append(path('.').abspath())
-import simple_rpc
-from simple_rpc.proto import (get_protobuf_definitions,
-                              get_command_processor_header)
+from arduino_rpc import get_sketch_directory, package_path
+from arduino_rpc.proto import (get_protobuf_definitions,
+                               get_command_processor_header)
 
 
-simple_rpc_files = find_package_data(package='simple_rpc', where='simple_rpc',
-                                     only_in_packages=False)
-pprint(simple_rpc_files)
+arduino_rpc_files = find_package_data(package='arduino_rpc',
+                                      where='arduino_rpc',
+                                      only_in_packages=False)
+pprint(arduino_rpc_files)
+
+PROTO_PREFIX = 'commands'
 
 DEFAULT_ARDUINO_BOARDS = ['mega2560']
 
-setup(name='wheeler.simple_rpc',
+setup(name='wheeler.arduino_rpc',
       version=version.getVersion(),
-      description='Simple Arduino RPC node packaged as Python package.',
+      description='Arduino RPC node packaged as Python package.',
       author='Christian Fobel',
       author_email='christian@fobel.net',
-      url='http://github.com/wheeler-microfluidics/simple_rpc.git',
+      url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       license='GPLv2',
-      packages=['simple_rpc'],
-      package_data=simple_rpc_files)
+      packages=['arduino_rpc'],
+      package_data=arduino_rpc_files)
 
 
 @task
 def generate_protobuf_definitions():
     definition_str = get_protobuf_definitions()
-    output_dir = path('simple_rpc').joinpath('protobuf').abspath()
-    output_file = output_dir.joinpath('simple.proto')
+    output_dir = package_path().joinpath('protobuf').abspath()
+    output_file = output_dir.joinpath('%s.proto' % PROTO_PREFIX)
     with output_file.open('wb') as output:
         output.write(definition_str)
 
@@ -40,7 +43,7 @@ def generate_protobuf_definitions():
 @task
 def generate_command_processor_header():
     header_str = get_command_processor_header()
-    output_dir = simple_rpc.get_sketch_directory()
+    output_dir = get_sketch_directory()
     output_file = output_dir.joinpath('NodeCommandProcessor.h')
     with output_file.open('wb') as output:
         output.write(header_str)
@@ -54,16 +57,17 @@ def generate_command_processor_header():
 # [1]: https://code.google.com/p/nanopb/source/browse/examples/using_union_messages/README.txt
 @needs('generate_protobuf_definitions')
 def generate_nanopb_code():
-    nanopb_home = path('simple_rpc').joinpath('libs', 'nanopb').abspath()
-    output_dir = path('simple_rpc').joinpath('protobuf').abspath()
-    sh('cd %s; ./protoc.sh %s simple.proto .' % (output_dir, nanopb_home))
+    nanopb_home = package_path().joinpath('libs', 'nanopb').abspath()
+    output_dir = package_path().joinpath('protobuf').abspath()
+    sh('cd %s; ./protoc.sh %s %s.proto .' % (output_dir, nanopb_home,
+                                             PROTO_PREFIX))
 
 
 @task
 @needs('generate_nanopb_code')
 def copy_nanopb_python_module():
-    code_dir = path('simple_rpc').joinpath('protobuf', 'py').abspath()
-    output_dir = path('simple_rpc').abspath()
+    code_dir = package_path().joinpath('protobuf', 'py').abspath()
+    output_dir = package_path().abspath()
     for f in code_dir.files('*.py'):
         f.copy(output_dir)
 

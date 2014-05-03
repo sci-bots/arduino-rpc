@@ -1,6 +1,6 @@
 #include "Memory.h"
 #include "PacketParser.h"
-#include "SimpleCommand.h"
+#include "CommandPacketHandler.h"
 #include "NodeCommandProcessor.h"
 #include "packet_handler.h"
 

@@ -1,0 +1,26 @@
+import sys
+
+from arduino_build import ArduinoBuildContext
+from path_helpers import path
+
+package = None
+root = path('.').abspath()
+while not list(root.files('pavement.py')):
+    package = root
+    root = root.parent
+    if root == package:
+        # We've reached the top level-directory without finding `pavement.py`.
+        raise IOError('Could not locate repository root.  Unable to locate '
+                      '`pavement.py` file in parent directory.')
+sys.path.append(root)
+exec('from %s import get_sources, get_includes' % package.name)
+
+Import('sketch_build_root')
+
+build_context = ArduinoBuildContext(ARGUMENTS, build_root=sketch_build_root)
+arduino_hex = build_context.build(extra_sources=get_sources(),
+                                  register_upload=True,
+                                  env_dict={'CPPPATH': get_includes()})
+
+Export('build_context')
+Export('arduino_hex')

@@ -193,4 +193,4 @@ def get_command_processor_header():
                  details['return_type'], [a[0] for a in details['arguments']])
                 for underscore_name, details in protobuf_methods.iteritems()]
     return t.render({'class_name': 'Node', 'commands': commands,
-                     'pb_header': 'simple.pb.h'})
+                     'pb_header': 'commands.pb.h'})

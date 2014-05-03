@@ -10,9 +10,9 @@ def package_path():
 
 def get_sketch_directory():
     '''
-    Return directory containing the `simple_rpc` Arduino sketch.
+    Return directory containing the Arduino sketch.
     '''
-    return package_path().joinpath('Arduino', 'simple_rpc')
+    return package_path().joinpath('Arduino').dirs()[0]
 
 
 def get_nanopb_directory():
@@ -25,20 +25,16 @@ def get_nano_code_directory():
 
 def get_includes():
     '''
-    Return directories containing the `simple_rpc` Arduino header
-    files.
-
-    Modules that need to compile against `simple_rpc` should use this
-    function to locate the appropriate include directories.
+    Return directories containing the Arduino header files.
 
     Notes
     =====
 
     For example:
 
-        import simple_rpc
+        import arduino_rpc
         ...
-        print ' '.join(['-I%s' % i for i in simple_rpc.get_includes()])
+        print ' '.join(['-I%s' % i for i in arduino_rpc.get_includes()])
         ...
 
     '''
@@ -48,21 +44,8 @@ def get_includes():
 
 def get_sources():
     '''
-    Return `simple_rpc` Arduino source file paths.
-
-    Modules that need to compile against `simple_rpc` should use this
-    function to locate the appropriate source files to compile.
-
-    Notes
-    =====
-
-    For example:
-
-        import simple_rpc
-        ...
-        print ' '.join(simple_rpc.get_sources())
-        ...
-
+    Return Arduino source file paths.  This includes any supplementary source
+    files that are not contained in Arduino libraries.
     '''
     return (get_sketch_directory().files('*.c*') +
             get_nano_code_directory().files('*.c*') +
@@ -72,12 +55,12 @@ def get_sources():
 
 def get_firmwares():
     '''
-    Return `simple_rpc` compiled Arduino hex file paths.
+    Return compiled Arduino hex file paths.
 
     This function may be used to locate firmware binaries that are available
-    for flashing to [Arduino Uno][1] boards.
+    for flashing to [Arduino][1] boards.
 
-    [1]: http://arduino.cc/en/Main/arduinoBoardUno
+    [1]: http://arduino.cc
     '''
     return OrderedDict([(board_dir.name, [f.abspath() for f in
                                           board_dir.walkfiles('*.hex')])
