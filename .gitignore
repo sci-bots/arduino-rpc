@@ -7,4 +7,10 @@ RELEASE-VERSION
 setup.py
 paver-minilib.zip
 build/*
-simple_rpc/simple_pb2.py
+*/*_pb2.py
+*/Arduino/*/*CommandProcessor.h
+*.o
+*/protobuf/nano
+*/protobuf/py
+*/protobuf/*.proto
+.sconsign.dblite

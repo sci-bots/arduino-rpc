@@ -1,16 +1,20 @@
 #include "Memory.h"
 #include "PacketParser.h"
 #include "SimpleCommand.h"
+#include "NodeCommandProcessor.h"
 #include "packet_handler.h"
 
 
 #define PACKET_SIZE   128
 uint8_t packet_buffer[PACKET_SIZE];
+const int16_t RAM_SIZE = ram_size();
+const int8_t LED_PIN = 13;
 
 typedef CommandPacketHandler<Stream, CommandProcessor> Handler;
 typedef PacketReactor<PacketParser<FixedPacket>, Stream, Handler> Reactor;
 
-CommandProcessor command_processor;
+Node node(LED_PIN);
+CommandProcessor command_processor(node);
 FixedPacket packet;
 /* `reactor` maintains parse state for a packet, and updates state one-byte
  * at-a-time. */

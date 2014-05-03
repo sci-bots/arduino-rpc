@@ -7,7 +7,9 @@ from paver.setuputils import setup, find_package_data
 import version
 sys.path.append(path('.').abspath())
 import simple_rpc
-from simple_rpc.proto import get_protobuf_definitions
+from simple_rpc.proto import (get_protobuf_definitions,
+                              get_command_processor_header)
+
 
 simple_rpc_files = find_package_data(package='simple_rpc', where='simple_rpc',
                                      only_in_packages=False)
@@ -36,6 +38,20 @@ def generate_protobuf_definitions():
 
 
 @task
+def generate_command_processor_header():
+    header_str = get_command_processor_header()
+    output_dir = simple_rpc.get_sketch_directory()
+    output_file = output_dir.joinpath('NodeCommandProcessor.h')
+    with output_file.open('wb') as output:
+        output.write(header_str)
+
+
+@task
+# Generate protocol buffer request and response definitions, implementing an
+# RPC API using the union message pattern suggested in the [`nanopb`][1]
+# examples.
+#
+# [1]: https://code.google.com/p/nanopb/source/browse/examples/using_union_messages/README.txt
 @needs('generate_protobuf_definitions')
 def generate_nanopb_code():
     nanopb_home = path('simple_rpc').joinpath('libs', 'nanopb').abspath()
@@ -53,7 +69,7 @@ def copy_nanopb_python_module():
 
 
 @task
-@needs('copy_nanopb_python_module')
+@needs('copy_nanopb_python_module', 'generate_command_processor_header')
 @cmdopts([('sconsflags=', 'f', 'Flags to pass to SCons.'),
           ('boards=', 'b', 'Comma-separated list of board names to compile '
            'for (e.g., `uno`).')])
