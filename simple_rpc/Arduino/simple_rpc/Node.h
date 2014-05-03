@@ -5,9 +5,8 @@
 
 #ifdef ARDUINO
 #include "Memory.h"
-extern const int16_t RAM_SIZE;
 #else
-const int16_t RAM_SIZE = 0;
+inline uint32_t ram_size() { return 0; }
 inline uint32_t data_size() { return 0; }
 inline uint32_t bss_size() { return 0; }
 inline uint32_t heap_size() { return 0; }
@@ -28,7 +27,7 @@ public:
   }
   void begin() {}
   void echo() {}
-  uint32_t ram_size() { return RAM_SIZE; }
+  uint32_t total_ram_size() { return ram_size(); }
   uint32_t ram_data_size() { return data_size(); }
   uint32_t ram_bss_size() { return bss_size(); }
   uint32_t ram_heap_size() { return heap_size(); }

@@ -7,7 +7,6 @@
 
 #define PACKET_SIZE   128
 uint8_t packet_buffer[PACKET_SIZE];
-const int16_t RAM_SIZE = ram_size();
 const int8_t LED_PIN = 13;
 
 typedef CommandPacketHandler<Stream, CommandProcessor> Handler;
