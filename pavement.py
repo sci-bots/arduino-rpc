@@ -68,8 +68,8 @@ def generate_nanopb_code():
 def copy_nanopb_python_module():
     code_dir = package_path().joinpath('protobuf', 'py').abspath()
     output_dir = package_path().abspath()
-    for f in code_dir.files('*.py'):
-        f.copy(output_dir)
+    protobuf_commands_file = list(code_dir.files('*_pb2.py'))[0]
+    protobuf_commands_file.copy(output_dir.joinpath('protobuf_commands.py'))
 
 
 @task

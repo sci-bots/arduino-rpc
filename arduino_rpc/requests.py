@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from simple_pb2 import *
+from .protobuf_commands import *
 
 
 # Collect the names of all request types.
