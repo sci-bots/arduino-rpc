@@ -5,6 +5,10 @@
 #include "CommandPacketHandler.h"
 //#include "NodeCommandProcessor.h"
 /* TODO: Re-enable `NodeCommandProcessor.h` include.
+ * TODO: Modify `NodeCommandProcessor.h` code-generator template to include
+ * request I2C forwarding.
+ *  - This also requires an update to the protocol buffer generation to include
+ *    the `ForwardI2cRequest` message types.
  *
  * __Temporarily__ disable include to prototype array argument handling through
  * Protocol Buffer RPC interface.  This will enable, among other things, acting
@@ -12,12 +16,17 @@
 #include "CommandProcessor.h"
 #include "packet_handler.h"
 
+#ifndef __AVR_ATmega2560__
+/* Disable serial port communications to save RAM unless we are compiling for
+ * the Mega2560, which has much more RAM to spare. */
+#define DISABLE_SERIAL
+#endif  // #ifndef __AVR_ATmega2560__
+
 
 #define PACKET_SIZE   28
+#ifndef DISABLE_SERIAL
 uint8_t packet_buffer[PACKET_SIZE];
-
-typedef CommandPacketHandler<Stream, CommandProcessor<Node> > Handler;
-typedef PacketReactor<PacketParser<FixedPacket>, Stream, Handler> Reactor;
+#endif  // #ifndef DISABLE_SERIAL
 
 uint8_t i2c_packet_buffer[PACKET_SIZE];
 uint8_t i2c_response_size_sent = false;
@@ -25,6 +34,11 @@ FixedPacket i2c_packet;
 
 Node node;
 CommandProcessor<Node> command_processor(node);
+
+#ifndef DISABLE_SERIAL
+typedef CommandPacketHandler<Stream, CommandProcessor<Node> > Handler;
+typedef PacketReactor<PacketParser<FixedPacket>, Stream, Handler> Reactor;
+
 FixedPacket packet;
 /* `reactor` maintains parse state for a packet, and updates state one-byte
  * at-a-time. */
@@ -34,6 +48,7 @@ Handler handler(Serial, command_processor);
 /* `reactor` uses `parser` to parse packets from input stream and passes
  * complete packets to `handler` for processing. */
 Reactor reactor(parser, Serial, handler);
+#endif  // #ifndef DISABLE_SERIAL
 
 
 void setup() {
@@ -48,18 +63,22 @@ void setup() {
 #endif  // #ifdef __AVR_ATmega328__
   // Set i2c clock-rate to 400kHz.
   TWBR = 12;
+#ifndef DISABLE_SERIAL
   Serial.begin(115200);
   packet.reset_buffer(PACKET_SIZE, &packet_buffer[0]);
   parser.reset(&packet);
+#endif  // #ifndef DISABLE_SERIAL
   i2c_packet.reset_buffer(PACKET_SIZE, &i2c_packet_buffer[0]);
 }
 
 
 void loop() {
+#ifndef DISABLE_SERIAL
   /* Parse all new bytes that are available.  If the parsed bytes result in a
    * completed packet, pass the complete packet to the command-processor to
    * process the request. */
   reactor.parse_available();
+#endif  // #ifndef DISABLE_SERIAL
 }
 
 

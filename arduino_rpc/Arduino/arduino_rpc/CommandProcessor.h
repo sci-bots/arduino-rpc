@@ -302,33 +302,71 @@ public:
         fields_type = (pb_field_t *)ForwardI2cRequestResponse_fields;
         /* Forward all bytes received on the local serial-stream to the i2c
          * bus. */
+        /* Use the I2C master/slave data flow described [here][1].
+         *
+         *  1. Write request _(as master)_ to _slave_ device.
+         *  2. Request a two-part response from the _slave_ device:
+         *   a. Response length, in bytes, as an unsigned, 8-bit integer.
+         *   b. Response of the length from 2(a).
+         *
+         * # Notes #
+         *
+         *  - Maximum of 32 bytes can be sent by the standard Wire library.
+         *
+         * ## Request data from slave ##
+         *
+         *  - The `Wire.requestFrom` function does not return until either the
+         *    requested data is fully available, or an error occurred.
+         *  - Building in a wait for `Wire.available` simply makes it possible
+         *    for the code to hang forever if the data is not available.
+         *
+         * ## Send data from slave to master upon request ##
+         *
+         *  - You can only do one Wire.write in a `requestEvent` callback.
+         *  - You do not do a `Wire.beginTransmission` or a
+         *    `Wire.endTransmission`.
+         *  - There is a limit of 32 bytes that can be returned.
+         *
+         * [1]: http://gammon.com.au/i2c-summary */
         Wire.beginTransmission((uint8_t)request.forward_i2c_request.address);
         Wire.write(string_buffer_.buffer, string_buffer_.length);
-        Wire.endTransmission();
-
-        delay(10);
+        if (Wire.endTransmission() == 0) {
+          /* Transmission failed.  Perhaps slave was not ready or not
+           * connected. */
+          response.forward_i2c_request.result = 0;
+          break;
+        }
 
         /* Request response size. */
-        Wire.requestFrom((uint8_t)request.forward_i2c_request.address,
-                         (uint8_t)1);
-        if (Wire.available()) {
-          request_size = Wire.read();
+        buffer_size = Wire.requestFrom((uint8_t)request
+                                       .forward_i2c_request.address,
+                                       (uint8_t)1);
+        if (buffer_size != 1) {
+          /* Unexpected number of bytes. */
+          response.forward_i2c_request.result = 0;
+          break;
         }
+
+        request_size = Wire.read();
+
         /* Request actual response. */
-        Wire.requestFrom((uint8_t)request.forward_i2c_request.address,
-                         (uint8_t)request_size);
-        // Slave may send less than requested
-        if (Wire.available()) {
-          request_size = Wire.available();
-          for (int i = 0; i < request_size; i++) {
-            // receive a byte as character
-            buffer[i] = Wire.read();
-          }
+        buffer_size = Wire.requestFrom((uint8_t)request
+                                       .forward_i2c_request.address,
+                                       (uint8_t)request_size);
+        if (buffer_size != request_size) {
+          /* Unexpected response size. */
+          response.forward_i2c_request.result = 0;
+          break;
         }
-        // Return directly from here, since the I2C response is already
-        // encoded and we wrote the encoded response directly to the buffer.
+        // Slave may send less than requested
+        for (int i = 0; i < buffer_size; i++) {
+          // receive a byte as character
+          buffer[i] = Wire.read();
+        }
+        /* Return directly from here, since the I2C response is already
+         * encoded and we wrote the encoded response directly to the
+         * buffer. */
         return request_size;
-        break;
       default:
         return -1;
         break;
