@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 #include "Memory.h"
+#define BROADCAST_ADDRESS 0x00
+
+
+/* Callback functions for slave device. */
+extern void i2c_receive_event(int byte_count);
+extern void i2c_request_event();
+
 
 class Node {
 public:
@@ -25,6 +32,7 @@ public:
   void analog_write(uint8_t pin, uint8_t value) { return analogWrite(pin, value); }
   uint32_t get_millis() const { return millis(); }
   uint32_t get_micros() const { return micros(); }
+  uint8_t forward_i2c_request(uint8_t address, uint8_t *request) const { return 0; }
 };
 
 

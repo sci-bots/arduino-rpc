@@ -19,6 +19,7 @@ pprint(arduino_rpc_files)
 PROTO_PREFIX = 'commands'
 
 DEFAULT_ARDUINO_BOARDS = ['mega2560']
+#DEFAULT_ARDUINO_BOARDS = ['uno']
 
 setup(name='wheeler.arduino_rpc',
       version=version.getVersion(),

@@ -189,8 +189,13 @@ public:
 def get_command_processor_header():
     protobuf_methods = get_protobuf_methods()
     t = jinja2.Template(COMMAND_PROCESSOR_TEMPLATE)
-    commands = [(underscore_to_camelcase(underscore_name), underscore_name,
-                 details['return_type'], [a[0] for a in details['arguments']])
-                for underscore_name, details in protobuf_methods.iteritems()]
+    commands = []
+    for underscore_name, details in protobuf_methods.iteritems():
+        camel_name = underscore_to_camelcase(underscore_name)
+        #if max([len(a[1]) for a in details['arguments']]) > 1:
+            #continue
+        argument_names = [a[0] for a in details['arguments']]
+        commands.append((camel_name, underscore_name, details['return_type'],
+                         argument_names))
     return t.render({'class_name': 'Node', 'commands': commands,
                      'pb_header': 'commands.pb.h'})
