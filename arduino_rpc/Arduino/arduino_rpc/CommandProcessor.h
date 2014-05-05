@@ -78,6 +78,8 @@ public:
 
       PinModeRequest pin_mode;
 
+      DelayMsRequest delay_ms;
+
       DigitalReadRequest digital_read;
 
       DigitalWriteRequest digital_write;
@@ -115,6 +117,8 @@ public:
       InputResponse input;
 
       PinModeResponse pin_mode;
+
+      DelayMsResponse delay_ms;
 
       DigitalReadResponse digital_read;
 
@@ -175,6 +179,9 @@ public:
         break;
       case CommandType_PIN_MODE:
         fields_type = (pb_field_t *)PinModeRequest_fields;
+        break;
+      case CommandType_DELAY_MS:
+        fields_type = (pb_field_t *)DelayMsRequest_fields;
         break;
       case CommandType_DIGITAL_READ:
         fields_type = (pb_field_t *)DigitalReadRequest_fields;
@@ -267,6 +274,11 @@ public:
         fields_type = (pb_field_t *)PinModeResponse_fields;
 
         obj_.pin_mode(request.pin_mode.pin, request.pin_mode.mode);
+        break;
+      case CommandType_DELAY_MS:
+        fields_type = (pb_field_t *)DelayMsResponse_fields;
+
+        obj_.delay_ms(request.delay_ms.milliseconds);
         break;
       case CommandType_DIGITAL_READ:
         fields_type = (pb_field_t *)DigitalReadResponse_fields;

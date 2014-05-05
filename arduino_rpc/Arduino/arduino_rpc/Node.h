@@ -26,6 +26,7 @@ public:
   uint8_t input() const { return INPUT; }
 
   void pin_mode(uint8_t pin, uint8_t mode) { return pinMode(pin, mode); }
+  void delay_ms(uint32_t milliseconds) const { delay(milliseconds); }
   bool digital_read(uint8_t pin) const { return digitalRead(pin); }
   void digital_write(uint8_t pin, uint8_t value) { digitalWrite(pin, value); }
   uint16_t analog_read(uint8_t pin) const { return analogRead(pin); }
