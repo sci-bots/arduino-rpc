@@ -33,7 +33,7 @@ public:
   void analog_write(uint8_t pin, uint8_t value) { return analogWrite(pin, value); }
   uint32_t get_millis() const { return millis(); }
   uint32_t get_micros() const { return micros(); }
-  uint8_t forward_i2c_request(uint8_t address, uint8_t *request) const { return 0; }
+  int8_t forward_i2c_request(uint8_t address, uint8_t *request) const { return 0; }
 };
 
 
