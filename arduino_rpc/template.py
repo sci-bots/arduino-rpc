@@ -1,8 +1,14 @@
-#ifndef ___NODE_COMMAND_PROCESSOR___
-#define ___NODE_COMMAND_PROCESSOR___
+'''
+Templates for code generation.
+'''
+
+
+COMMAND_PROCESSOR_TEMPLATE = r'''
+#ifndef ___COMMAND_PROCESSOR___
+#define ___COMMAND_PROCESSOR___
 
 #include "UnionMessage.h"
-#include "commands.pb.h"
+#include "{{ pb_header }}"
 
 
 struct buffer_with_len {
@@ -10,6 +16,11 @@ struct buffer_with_len {
   uint8_t length;
 };
 
+{%- if disable_i2c %}
+#ifndef DISABLE_I2C
+#define DISABLE_I2C
+#endif
+{%- endif %}
 
 static bool read_string(pb_istream_t *stream, const pb_field_t *field,
                         void **arg) {
@@ -39,11 +50,11 @@ class CommandProcessor {
    * must contain response values. */
 protected:
   Obj &obj_;
+#ifndef DISABLE_I2C
   buffer_with_len string_buffer_;
+#endif  // #ifndef DISABLE_I2C
 public:
-  CommandProcessor(Obj &obj) : obj_(obj) {
-    pinMode(13, OUTPUT);
-  }
+  CommandProcessor(Obj &obj) : obj_(obj) {}
 
   int process_command(uint16_t request_size, uint16_t buffer_size,
                       uint8_t *buffer) {
@@ -56,88 +67,28 @@ public:
      *  - `data`: The arguments buffer. */
 
     union {
-      TotalRamSizeRequest total_ram_size;
-
-      RamDataSizeRequest ram_data_size;
-
-      RamBssSizeRequest ram_bss_size;
-
-      RamHeapSizeRequest ram_heap_size;
-
-      RamStackSizeRequest ram_stack_size;
-
-      RamFreeRequest ram_free;
-
-      HighRequest high;
-
-      LowRequest low;
-
-      OutputRequest output;
-
-      InputRequest input;
-
-      PinModeRequest pin_mode;
-
-      DelayMsRequest delay_ms;
-
-      DigitalReadRequest digital_read;
-
-      DigitalWriteRequest digital_write;
-
-      AnalogReadRequest analog_read;
-
-      AnalogWriteRequest analog_write;
-
-      GetMillisRequest get_millis;
-
-      GetMicrosRequest get_micros;
-
+#ifndef DISABLE_I2C
       ForwardI2cRequestRequest forward_i2c_request;
-     } request;
+#endif  // #ifndef DISABLE_I2C
+    {%- for camel_name, underscore_name, return_type, args in commands %}
+      {{ camel_name }}Request {{ underscore_name }};
+    {%- endfor %}
+    } request;
 
     union {
-      TotalRamSizeResponse total_ram_size;
-
-      RamDataSizeResponse ram_data_size;
-
-      RamBssSizeResponse ram_bss_size;
-
-      RamHeapSizeResponse ram_heap_size;
-
-      RamStackSizeResponse ram_stack_size;
-
-      RamFreeResponse ram_free;
-
-      HighResponse high;
-
-      LowResponse low;
-
-      OutputResponse output;
-
-      InputResponse input;
-
-      PinModeResponse pin_mode;
-
-      DelayMsResponse delay_ms;
-
-      DigitalReadResponse digital_read;
-
-      DigitalWriteResponse digital_write;
-
-      AnalogReadResponse analog_read;
-
-      AnalogWriteResponse analog_write;
-
-      GetMillisResponse get_millis;
-
-      GetMicrosResponse get_micros;
-
+#ifndef DISABLE_I2C
       ForwardI2cRequestResponse forward_i2c_request;
-     } response;
+#endif  // #ifndef DISABLE_I2C
+    {%- for camel_name, underscore_name, return_type, args in commands %}
+      {{ camel_name }}Response {{ underscore_name }};
+    {%- endfor %}
+    } response;
 
     pb_field_t *fields_type;
     bool status = true;
+#ifndef DISABLE_I2C
     uint8_t i2c_count = 0;
+#endif  // #ifndef DISABLE_I2C
 
     pb_istream_t istream = pb_istream_from_buffer(buffer, request_size);
 
@@ -148,65 +99,18 @@ public:
      * tag, which corresponds to a value in the `CommandType` enumerated type.
      */
     switch (request_type) {
-      case CommandType_TOTAL_RAM_SIZE:
-        fields_type = (pb_field_t *)TotalRamSizeRequest_fields;
-        break;
-      case CommandType_RAM_DATA_SIZE:
-        fields_type = (pb_field_t *)RamDataSizeRequest_fields;
-        break;
-      case CommandType_RAM_BSS_SIZE:
-        fields_type = (pb_field_t *)RamBssSizeRequest_fields;
-        break;
-      case CommandType_RAM_HEAP_SIZE:
-        fields_type = (pb_field_t *)RamHeapSizeRequest_fields;
-        break;
-      case CommandType_RAM_STACK_SIZE:
-        fields_type = (pb_field_t *)RamStackSizeRequest_fields;
-        break;
-      case CommandType_RAM_FREE:
-        fields_type = (pb_field_t *)RamFreeRequest_fields;
-        break;
-      case CommandType_HIGH:
-        fields_type = (pb_field_t *)HighRequest_fields;
-        break;
-      case CommandType_LOW:
-        fields_type = (pb_field_t *)LowRequest_fields;
-        break;
-      case CommandType_OUTPUT:
-        fields_type = (pb_field_t *)OutputRequest_fields;
-        break;
-      case CommandType_INPUT:
-        fields_type = (pb_field_t *)InputRequest_fields;
-        break;
-      case CommandType_PIN_MODE:
-        fields_type = (pb_field_t *)PinModeRequest_fields;
-        break;
-      case CommandType_DELAY_MS:
-        fields_type = (pb_field_t *)DelayMsRequest_fields;
-        break;
-      case CommandType_DIGITAL_READ:
-        fields_type = (pb_field_t *)DigitalReadRequest_fields;
-        break;
-      case CommandType_DIGITAL_WRITE:
-        fields_type = (pb_field_t *)DigitalWriteRequest_fields;
-        break;
-      case CommandType_ANALOG_READ:
-        fields_type = (pb_field_t *)AnalogReadRequest_fields;
-        break;
-      case CommandType_ANALOG_WRITE:
-        fields_type = (pb_field_t *)AnalogWriteRequest_fields;
-        break;
-      case CommandType_GET_MILLIS:
-        fields_type = (pb_field_t *)GetMillisRequest_fields;
-        break;
-      case CommandType_GET_MICROS:
-        fields_type = (pb_field_t *)GetMicrosRequest_fields;
-        break;
+#ifndef DISABLE_I2C
       case CommandType_FORWARD_I2C_REQUEST:
         request.forward_i2c_request.request.funcs.decode = &read_string;
         request.forward_i2c_request.request.arg = &string_buffer_;
         fields_type = (pb_field_t *)ForwardI2cRequestRequest_fields;
         break;
+#endif  // #ifndef DISABLE_I2C
+    {%- for camel_name, underscore_name, return_type, args in commands %}
+      case CommandType_{{ underscore_name|upper }}:
+        fields_type = (pb_field_t *){{ camel_name }}Request_fields;
+        break;
+    {%- endfor %}
       default:
         status = false;
         break;
@@ -221,96 +125,7 @@ public:
 
     /* Process the request, and populate response fields as necessary. */
     switch (request_type) {
-      case CommandType_TOTAL_RAM_SIZE:
-        fields_type = (pb_field_t *)TotalRamSizeResponse_fields;
-        response.total_ram_size.result =
-        obj_.total_ram_size();
-        break;
-      case CommandType_RAM_DATA_SIZE:
-        fields_type = (pb_field_t *)RamDataSizeResponse_fields;
-        response.ram_data_size.result =
-        obj_.ram_data_size();
-        break;
-      case CommandType_RAM_BSS_SIZE:
-        fields_type = (pb_field_t *)RamBssSizeResponse_fields;
-        response.ram_bss_size.result =
-        obj_.ram_bss_size();
-        break;
-      case CommandType_RAM_HEAP_SIZE:
-        fields_type = (pb_field_t *)RamHeapSizeResponse_fields;
-        response.ram_heap_size.result =
-        obj_.ram_heap_size();
-        break;
-      case CommandType_RAM_STACK_SIZE:
-        fields_type = (pb_field_t *)RamStackSizeResponse_fields;
-        response.ram_stack_size.result =
-        obj_.ram_stack_size();
-        break;
-      case CommandType_RAM_FREE:
-        fields_type = (pb_field_t *)RamFreeResponse_fields;
-        response.ram_free.result =
-        obj_.ram_free();
-        break;
-      case CommandType_HIGH:
-        fields_type = (pb_field_t *)HighResponse_fields;
-        response.high.result =
-        obj_.high();
-        break;
-      case CommandType_LOW:
-        fields_type = (pb_field_t *)LowResponse_fields;
-        response.low.result =
-        obj_.low();
-        break;
-      case CommandType_OUTPUT:
-        fields_type = (pb_field_t *)OutputResponse_fields;
-        response.output.result =
-        obj_.output();
-        break;
-      case CommandType_INPUT:
-        fields_type = (pb_field_t *)InputResponse_fields;
-        response.input.result =
-        obj_.input();
-        break;
-      case CommandType_PIN_MODE:
-        fields_type = (pb_field_t *)PinModeResponse_fields;
-
-        obj_.pin_mode(request.pin_mode.pin, request.pin_mode.mode);
-        break;
-      case CommandType_DELAY_MS:
-        fields_type = (pb_field_t *)DelayMsResponse_fields;
-
-        obj_.delay_ms(request.delay_ms.milliseconds);
-        break;
-      case CommandType_DIGITAL_READ:
-        fields_type = (pb_field_t *)DigitalReadResponse_fields;
-        response.digital_read.result =
-        obj_.digital_read(request.digital_read.pin);
-        break;
-      case CommandType_DIGITAL_WRITE:
-        fields_type = (pb_field_t *)DigitalWriteResponse_fields;
-
-        obj_.digital_write(request.digital_write.pin, request.digital_write.value);
-        break;
-      case CommandType_ANALOG_READ:
-        fields_type = (pb_field_t *)AnalogReadResponse_fields;
-        response.analog_read.result =
-        obj_.analog_read(request.analog_read.pin);
-        break;
-      case CommandType_ANALOG_WRITE:
-        fields_type = (pb_field_t *)AnalogWriteResponse_fields;
-
-        obj_.analog_write(request.analog_write.pin, request.analog_write.value);
-        break;
-      case CommandType_GET_MILLIS:
-        fields_type = (pb_field_t *)GetMillisResponse_fields;
-        response.get_millis.result =
-        obj_.get_millis();
-        break;
-      case CommandType_GET_MICROS:
-        fields_type = (pb_field_t *)GetMicrosResponse_fields;
-        response.get_micros.result =
-        obj_.get_micros();
-        break;
+#ifndef DISABLE_I2C
       case CommandType_FORWARD_I2C_REQUEST:
         fields_type = (pb_field_t *)ForwardI2cRequestResponse_fields;
         /* Forward all bytes received on the local serial-stream to the i2c
@@ -417,6 +232,14 @@ public:
          * encoded and we wrote the encoded response directly to the
          * buffer. */
         return request_size;
+#endif  // #ifndef DISABLE_I2C
+    {%- for camel_name, underscore_name, return_type, args in commands %}
+      case CommandType_{{ underscore_name|upper }}:
+        fields_type = (pb_field_t *){{ camel_name }}Response_fields;
+        {% if return_type %}response.{{ underscore_name }}.result ={% endif %}
+        obj_.{{ underscore_name }}({% for arg in args %}request.{{ underscore_name }}.{{ arg.0 }}{% if not loop.last %}, {% endif %}{% endfor %});
+        break;
+    {%- endfor -%}
       default:
         return -1;
         break;
@@ -434,4 +257,51 @@ public:
   }
 };
 
-#endif  // #ifndef ___NODE_COMMAND_PROCESSOR___
+#endif  // #ifndef ___COMMAND_PROCESSOR___
+'''
+
+
+COMMAND_PROTO_DEFINITIONS = r'''
+enum CommandType {
+    FORWARD_I2C_REQUEST = 1;
+{%- for underscore_name, key in command_names %}
+    {{ underscore_name|upper }} = {{ key }};
+{%- endfor %}
+}
+
+message ForwardI2cRequestRequest {
+  required uint32 address = 1;
+  required bytes request = 2;
+}
+
+{%- for camel_name, underscore_name, return_type, args in commands -%}
+message {{ camel_name }}Request {
+{%- for arg in args %}
+    required {{ arg.1 }} {{ arg.0 }} = {{ loop.index }};
+{%- endfor %}
+}
+{%- endfor %}
+
+message ForwardI2cRequestResponse { required sint32 result = 1; }
+
+{%- for camel_name, underscore_name, return_type, args in commands -%}
+message {{ camel_name }}Response {
+{%- if return_type %}
+    required {{ return_type }} result = 1;
+{% endif -%}
+}
+{%- endfor %}
+
+message CommandRequest {
+    optional ForwardI2cRequestRequest forward_i2c_request = 1;
+{%- for camel_name, underscore_name, key in command_types %}
+    optional {{ camel_name }}Request {{ underscore_name }} = {{ key }};
+{%- endfor %}
+}
+
+message CommandResponse {
+    optional ForwardI2cRequestResponse forward_i2c_request = 1;
+{%- for camel_name, underscore_name, key in command_types %}
+    optional {{ camel_name }}Response {{ underscore_name }} = {{ key }};
+{%- endfor %}
+}'''

@@ -3,17 +3,7 @@
 #include "PacketParser.h"
 #include "Node.h"
 #include "CommandPacketHandler.h"
-//#include "NodeCommandProcessor.h"
-/* TODO: Re-enable `NodeCommandProcessor.h` include.
- * TODO: Modify `NodeCommandProcessor.h` code-generator template to include
- * request I2C forwarding.
- *  - This also requires an update to the protocol buffer generation to include
- *    the `ForwardI2cRequest` message types.
- *
- * __Temporarily__ disable include to prototype array argument handling through
- * Protocol Buffer RPC interface.  This will enable, among other things, acting
- * as a bridge between a serial connection and an i2c bus. */
-#include "CommandProcessor.h"
+#include "NodeCommandProcessor.h"
 #include "packet_handler.h"
 
 
