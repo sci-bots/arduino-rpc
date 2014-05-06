@@ -263,16 +263,20 @@ public:
 
 COMMAND_PROTO_DEFINITIONS = r'''
 enum CommandType {
+{%- if not disable_i2c %}
     FORWARD_I2C_REQUEST = 1;
+{%- endif %}
 {%- for underscore_name, key in command_names %}
     {{ underscore_name|upper }} = {{ key }};
 {%- endfor %}
 }
 
+{%- if not disable_i2c %}
 message ForwardI2cRequestRequest {
   required uint32 address = 1;
   required bytes request = 2;
 }
+{%- endif %}
 
 {%- for camel_name, underscore_name, return_type, args in commands -%}
 message {{ camel_name }}Request {
@@ -282,7 +286,9 @@ message {{ camel_name }}Request {
 }
 {%- endfor %}
 
+{%- if not disable_i2c %}
 message ForwardI2cRequestResponse { required sint32 result = 1; }
+{%- endif %}
 
 {%- for camel_name, underscore_name, return_type, args in commands -%}
 message {{ camel_name }}Response {
@@ -293,14 +299,18 @@ message {{ camel_name }}Response {
 {%- endfor %}
 
 message CommandRequest {
+{%- if not disable_i2c %}
     optional ForwardI2cRequestRequest forward_i2c_request = 1;
+{%- endif %}
 {%- for camel_name, underscore_name, key in command_types %}
     optional {{ camel_name }}Request {{ underscore_name }} = {{ key }};
 {%- endfor %}
 }
 
 message CommandResponse {
+{%- if not disable_i2c %}
     optional ForwardI2cRequestResponse forward_i2c_request = 1;
+{%- endif %}
 {%- for camel_name, underscore_name, key in command_types %}
     optional {{ camel_name }}Response {{ underscore_name }} = {{ key }};
 {%- endfor %}

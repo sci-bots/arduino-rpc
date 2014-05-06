@@ -7,8 +7,7 @@ from paver.setuputils import setup, find_package_data
 import version
 sys.path.append(path('.').abspath())
 from arduino_rpc import get_sketch_directory, package_path
-from arduino_rpc.proto import (get_protobuf_definitions,
-                               get_command_processor_header)
+from arduino_rpc.proto import CodeGenerator
 
 
 arduino_rpc_files = find_package_data(package='arduino_rpc',
@@ -34,7 +33,8 @@ setup(name='wheeler.arduino_rpc',
 
 @task
 def generate_protobuf_definitions():
-    definition_str = get_protobuf_definitions()
+    code_generator = CodeGenerator(get_sketch_directory().joinpath('Node.h'))
+    definition_str = code_generator.get_protobuf_definitions()
     output_dir = package_path().joinpath('protobuf').abspath()
     output_file = output_dir.joinpath('%s.proto' % PROTO_PREFIX)
     with output_file.open('wb') as output:
@@ -43,7 +43,8 @@ def generate_protobuf_definitions():
 
 @task
 def generate_command_processor_header():
-    header_str = get_command_processor_header()
+    code_generator = CodeGenerator(get_sketch_directory().joinpath('Node.h'))
+    header_str = code_generator.get_command_processor_header()
     output_dir = get_sketch_directory()
     output_file = output_dir.joinpath('NodeCommandProcessor.h')
     with output_file.open('wb') as output:
