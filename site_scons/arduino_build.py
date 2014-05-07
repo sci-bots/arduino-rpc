@@ -38,6 +38,7 @@
 #
 from glob import glob
 import sys
+from sys import platform as _platform
 import re
 import os
 import platform
@@ -139,7 +140,7 @@ class ArduinoBuildContext(object):
         self.AVRDUDE_CONF = None
         self.AVR_HOME_DUDE = None
 
-        if os.name == 'darwin':
+        if _platform == 'darwin':
             # For MacOS X, pick up the AVR tools from within Arduino.app
             self.ARDUINO_HOME = self.resolve_var('ARDUINO_HOME/Applications'
                                                  '/Arduino.app/Contents/'
@@ -152,7 +153,7 @@ class ArduinoBuildContext(object):
                                              os.path.join(self.ARDUINO_HOME,
                                                           'hardware/tools/avr/'
                                                           'bin'))
-        elif os.name == 'nt':
+        elif _platform == 'win32':
             # For Windows, use environment variables.
             self.ARDUINO_HOME = self.resolve_var('ARDUINO_HOME', None)
             self.ARDUINO_PORT = self.resolve_var('ARDUINO_PORT', '')
@@ -169,8 +170,7 @@ class ArduinoBuildContext(object):
                                                  '/usr/share/arduino/')
             self.ARDUINO_PORT = self.resolve_var('ARDUINO_PORT',
                                                  get_usb_tty('/dev/ttyUSB*'))
-            default_sketchbook_home = os.path.expanduser('~/share/arduino/'
-                                                         'sketchbook/')
+            default_sketchbook_home = os.path.expanduser('~/sketchbook/')
             if not os.path.exists(default_sketchbook_home):
                 default_sketchbook_home = ''
             self.SKETCHBOOK_HOME = self.resolve_var('SKETCHBOOK_HOME',
@@ -212,7 +212,7 @@ class ArduinoBuildContext(object):
             print "Arduino version " + self.ARDUINO_VER + " specified"
 
         # Some OSs need bundle with IDE tool-chain
-        if os.name == 'darwin' or os.name == 'nt':
+        if _platform in ('darwin', 'win32'):
             self.AVRDUDE_CONF = os.path.join(self.ARDUINO_HOME,
                                              'hardware/tools/avr/etc/'
                                              'avrdude.conf')

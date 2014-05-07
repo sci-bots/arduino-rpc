@@ -1,5 +1,6 @@
 import re
 import sys
+from sys import platform as _platform
 import os
 from itertools import chain
 
@@ -8,13 +9,16 @@ from path_helpers import path
 home_dir = path('~').expand()
 
 ARDUINO_SEARCH_PATHS = [home_dir, ]
-if os.name == 'nt':
+if _platform == 'win32':
     from win32com.shell import shell, shellcon
     mydocs = shell.SHGetFolderPath(0, shellcon.CSIDL_PERSONAL, 0, 0)
     AVRDUDE_NAME = 'avrdude.exe'
-    ARDUINO_SEARCH_PATHS += [path(mydocs), 
-                            path('%SYSTEMDRIVE%/').expand(),
-                            path('%PROGRAMFILES%').expand(), ]
+    ARDUINO_SEARCH_PATHS += [path(mydocs), path('%SYSTEMDRIVE%/').expand(),
+                             path('%PROGRAMFILES%').expand(), ]
+elif _platform == 'darwin':
+    AVRDUDE_NAME = 'avrdude'
+    ARDUINO_SEARCH_PATHS += [path('/Applications/Arduino.app/Contents/'
+                                  'Resources/Java')]
 else:
     AVRDUDE_NAME = 'avrdude'
     ARDUINO_SEARCH_PATHS += [path("/usr/share/")]
@@ -36,7 +40,7 @@ def get_arduino_paths():
     if os.name == 'nt':
         # use arduino version 0023 if it exists
         for avrdude in fs:
-            if get_arduino_version(avrdude)=='0023':
+            if get_arduino_version(avrdude) == '0023':
                 break
     else:
         avrdude = fs[0]
@@ -50,7 +54,8 @@ def get_arduino_paths():
     arduino_path = p.parent
     avrdude_conf = list(arduino_path.walkfiles('avrdude.conf'))
     if not avrdude_conf:
-        print >> sys.stderr, '''avrdude configuration (avrdude.conf) path not found.'''
+        print >> sys.stderr, ('avrdude configuration `avrdude.conf` path not '
+                              'found.')
         sys.exit(1)
     else:
         avrdude_conf = avrdude_conf[0]
@@ -58,7 +63,8 @@ def get_arduino_paths():
 
 
 def get_avrdude_list(p):
-    return list(set(chain(*[d.walkfiles(AVRDUDE_NAME) for d in p.dirs('arduino*')])))
+    return list(set(chain(*[d.walkfiles(AVRDUDE_NAME)
+                            for d in p.dirs('arduino*')])))
 
 
 def get_arduino_version(p):
