@@ -38,6 +38,21 @@ static bool read_string(pb_istream_t *stream, const pb_field_t *field,
 }
 
 
+template <typename Int>
+static bool read_int_array(pb_istream_t *stream, const pb_field_t *field,
+                           void **arg) {
+    Int &array = *((Int*)(*arg));
+    uint64_t value;
+
+    if (!pb_decode_varint(stream, &value)) {
+      return false;
+    }
+    array.data[array.length] = value;
+    array.length++;
+    return true;
+}
+
+
 template <typename Obj>
 class CommandProcessor {
   /* # `CommandProcessor` #
@@ -53,6 +68,11 @@ protected:
 #ifndef DISABLE_I2C
   buffer_with_len string_buffer_;
 #endif  // #ifndef DISABLE_I2C
+  uint32_t array_buffer_[10];
+  union {
+    UInt8Array uint8_t_;
+    UInt16Array uint16_t_;
+  } array_;
 public:
   CommandProcessor(Obj &obj) : obj_(obj) {}
 
@@ -108,6 +128,15 @@ public:
 #endif  // #ifndef DISABLE_I2C
     {%- for camel_name, underscore_name, return_type, args in commands %}
       case CommandType_{{ underscore_name|upper }}:
+    {%- for name, type_info in args -%}
+    {%- if type_info.1 == 'array' %}
+        /* Array: {{ name }}, {{ type_info.0 }}, {{ type_info.1 }}, {{ type_info.2 }} */
+        array_.{{ type_info.0 }}_.length = 0;
+        array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(&array_buffer_[0]);
+        request.array_test.{{ name }}.funcs.decode = &read_int_array<{{ type_info.2 }}>;
+        request.array_test.{{ name }}.arg = &array_.{{ type_info.0 }}_;
+    {% endif -%}
+    {%- endfor %}
         fields_type = (pb_field_t *){{ camel_name }}Request_fields;
         break;
     {%- endfor %}
@@ -237,7 +266,15 @@ public:
       case CommandType_{{ underscore_name|upper }}:
         fields_type = (pb_field_t *){{ camel_name }}Response_fields;
         {% if return_type %}response.{{ underscore_name }}.result ={% endif %}
-        obj_.{{ underscore_name }}({% for arg in args %}request.{{ underscore_name }}.{{ arg.0 }}{% if not loop.last %}, {% endif %}{% endfor %});
+        obj_.{{ underscore_name }}(
+        {%- for name, type_info in args -%}
+        {%- if type_info.1 == 'array' %}
+            array_.{{ type_info.0 }}_
+        {% else %}
+            request.{{ underscore_name }}.{{ name }}
+        {% endif -%}
+        {%- if not loop.last %}, {% endif %}
+        {%- endfor %});
         break;
     {%- endfor -%}
       default:
@@ -280,8 +317,12 @@ message ForwardI2cRequestRequest {
 
 {%- for camel_name, underscore_name, return_type, args in commands -%}
 message {{ camel_name }}Request {
-{%- for arg in args %}
+{%- for arg in args -%}
+{%- if arg.1|length == 2 %}
+    {{ arg.1.1 }} {{ arg.1.0 }} {{ arg.0 }} = {{ loop.index }} [packed=true];
+{%- else %}
     required {{ arg.1 }} {{ arg.0 }} = {{ loop.index }};
+{%- endif %}
 {%- endfor %}
 }
 {%- endfor %}
