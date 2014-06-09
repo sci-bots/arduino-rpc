@@ -50,7 +50,7 @@ void setup() {
 #endif  // #ifdef __AVR_ATmega328__
   // Set i2c clock-rate to 400kHz.
   TWBR = 12;
-#ifndef DISABLE_SERIAL
+#if !defined(DISABLE_SERIAL)
   Serial.begin(115200);
   packet.reset_buffer(PACKET_SIZE, &packet_buffer[0]);
   parser.reset(&packet);

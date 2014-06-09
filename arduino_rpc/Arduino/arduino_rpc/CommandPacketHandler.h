@@ -9,8 +9,19 @@
 template <typename Packet, typename Processor>
 void process_packet_with_processor(Packet &packet, Processor &processor) {
     uint16_t payload_bytes_to_process = packet.payload_length_;
+
     if (packet.type() == Packet::packet_type::DATA &&
         payload_bytes_to_process > 0) {
+#if defined (SERIAL_DEBUG) && defined (DISABLE_SERIAL)
+      /* Dump packet payload bytes as hex characters. */
+      for (int i = 0; i < packet.payload_length_; i++) {
+          Serial.print(packet.payload_buffer_[i], HEX);
+          if (i < packet.payload_length_ - 1) {
+            Serial.print(", ");
+          }
+          Serial.println("");
+      }
+#endif
       int result = processor.process_command(packet.payload_length_,
                                              packet.buffer_size_,
                                              packet.payload_buffer_);

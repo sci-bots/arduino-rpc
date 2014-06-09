@@ -7,7 +7,12 @@ from paver.setuputils import setup, find_package_data
 import version
 sys.path.append(path('.').abspath())
 from arduino_rpc import get_sketch_directory, package_path
-from arduino_rpc.proto import CodeGenerator
+try:
+    from arduino_rpc.proto import CodeGenerator
+except ImportError:
+    import warnings
+
+    warnings.warn('Could not import `clang`-based code-generator.')
 
 
 arduino_rpc_files = find_package_data(package='arduino_rpc',
@@ -17,8 +22,7 @@ pprint(arduino_rpc_files)
 
 PROTO_PREFIX = 'commands'
 
-DEFAULT_ARDUINO_BOARDS = ['mega2560']
-#DEFAULT_ARDUINO_BOARDS = ['uno']
+DEFAULT_ARDUINO_BOARDS = ['uno']
 
 setup(name='wheeler.arduino_rpc',
       version=version.getVersion(),

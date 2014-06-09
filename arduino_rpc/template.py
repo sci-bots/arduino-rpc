@@ -8,6 +8,7 @@ COMMAND_PROCESSOR_TEMPLATE = r'''
 #define ___COMMAND_PROCESSOR___
 
 #include "UnionMessage.h"
+#include "Array.h"
 #include "{{ pb_header }}"
 
 

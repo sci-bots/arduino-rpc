@@ -17,10 +17,14 @@ exec('from %s import get_sources, get_includes' % package.name)
 
 Import('sketch_build_root')
 
+env_dict = {'CPPPATH': get_includes()}
+if 'CFLAGS' in ARGUMENTS:
+    env_dict['CFLAGS'] = ARGUMENTS['CFLAGS']
+    print '[CFLAGS] "%s"' % env_dict['CFLAGS']
 build_context = ArduinoBuildContext(ARGUMENTS, build_root=sketch_build_root)
 arduino_hex = build_context.build(extra_sources=get_sources(),
                                   register_upload=True,
-                                  env_dict={'CPPPATH': get_includes()})
+                                  env_dict=env_dict)
 
 Export('build_context')
 Export('arduino_hex')
