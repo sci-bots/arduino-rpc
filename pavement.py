@@ -31,7 +31,7 @@ setup(name='wheeler.arduino_rpc',
       author_email='christian@fobel.net',
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       license='GPLv2',
-      install_requires=['arduino_helpers'],
+      install_requires=['path_helpers', 'bitarray', 'arduino_helpers'],
       packages=['arduino_rpc'],
       package_data=arduino_rpc_files)
 
