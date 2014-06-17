@@ -5,7 +5,7 @@ import jinja2
 from protobuf_helpers import underscore_to_camelcase, get_protobuf_type
 from clang_helpers import (open_cpp_source, extract_class_declarations,
                            extract_method_signatures, get_stdint_type)
-from clang.cindex import Cursor, TypeKind
+from clang_helpers.clang.cindex import Cursor, TypeKind
 
 from .template import COMMAND_PROCESSOR_TEMPLATE, COMMAND_PROTO_DEFINITIONS
 
