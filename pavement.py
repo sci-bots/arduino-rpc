@@ -6,7 +6,6 @@ from paver.setuputils import setup, find_package_data
 
 import version
 sys.path.append(path('.').abspath())
-from arduino_rpc import get_sketch_directory, package_path
 try:
     from arduino_rpc.proto import CodeGenerator
 except ImportError:
@@ -32,13 +31,15 @@ setup(name='wheeler.arduino_rpc',
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       license='GPLv2',
       install_requires=['nadamq', 'path_helpers', 'bitarray',
-                        'arduino_helpers'],
+                        'arduino_helpers', 'clang_helpers'],
       packages=['arduino_rpc'],
       package_data=arduino_rpc_files)
 
 
 @task
 def generate_protobuf_definitions():
+    from arduino_rpc import get_sketch_directory, package_path
+
     code_generator = CodeGenerator(get_sketch_directory().joinpath('Node.h'))
     definition_str = code_generator.get_protobuf_definitions()
     output_dir = package_path().joinpath('protobuf').abspath()
@@ -49,6 +50,8 @@ def generate_protobuf_definitions():
 
 @task
 def generate_command_processor_header():
+    from arduino_rpc import get_sketch_directory
+
     code_generator = CodeGenerator(get_sketch_directory().joinpath('Node.h'))
     header_str = code_generator.get_command_processor_header()
     output_dir = get_sketch_directory()
@@ -65,6 +68,8 @@ def generate_command_processor_header():
 # [1]: https://code.google.com/p/nanopb/source/browse/examples/using_union_messages/README.txt
 @needs('generate_protobuf_definitions')
 def generate_nanopb_code():
+    from arduino_rpc import package_path
+
     nanopb_home = package_path().joinpath('libs', 'nanopb').abspath()
     output_dir = package_path().joinpath('protobuf').abspath()
     sh('cd %s; ./protoc.sh %s %s.proto .' % (output_dir, nanopb_home,
@@ -74,6 +79,8 @@ def generate_nanopb_code():
 @task
 @needs('generate_nanopb_code')
 def copy_nanopb_python_module():
+    from arduino_rpc import package_path
+
     code_dir = package_path().joinpath('protobuf', 'py').abspath()
     output_dir = package_path().abspath()
     protobuf_commands_file = list(code_dir.files('*_pb2.py'))[0]
