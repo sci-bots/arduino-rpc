@@ -2,6 +2,7 @@
 #define ___NODE__H___
 
 #include <stdint.h>
+#include <EEPROM.h>
 #include "Memory.h"
 #include "Array.h"
 #define BROADCAST_ADDRESS 0x00
@@ -14,61 +15,32 @@ extern void i2c_request_event();
 
 class Node {
 public:
+  static const uint16_t EEPROM__I2C_ADDRESS = 0x00;
+  uint8_t i2c_address_;
+
+  Node() {
+    i2c_address_ = EEPROM.read(EEPROM__I2C_ADDRESS);
+    Wire.begin(i2c_address_);
+  }
   uint32_t total_ram_size() { return ram_size(); }
-#if 0
-  uint32_t ram_data_size() { return data_size(); }
-  uint32_t ram_bss_size() { return bss_size(); }
-  uint32_t ram_heap_size() { return heap_size(); }
-  uint32_t ram_stack_size() { return stack_size(); }
-#endif
   uint32_t ram_free() { return free_memory(); }
 
-#if 0
   void pin_mode(uint8_t pin, uint8_t mode) { return pinMode(pin, mode); }
   void delay_ms(uint32_t milliseconds) const { delay(milliseconds); }
   bool digital_read(uint8_t pin) const { return digitalRead(pin); }
   void digital_write(uint8_t pin, uint8_t value) { digitalWrite(pin, value); }
   uint16_t analog_read(uint8_t pin) const { return analogRead(pin); }
   void analog_write(uint8_t pin, uint8_t value) { return analogWrite(pin, value); }
-  uint32_t get_millis() const { return millis(); }
+  int i2c_address() const { return i2c_address_; }
+  int set_i2c_address(uint8_t address) {
+    i2c_address_ = address;
+    Wire.begin(address);
+    // Write the value to the appropriate byte of the EEPROM.
+    // These values will remain there when the board is turned off.
+    EEPROM.write(EEPROM__I2C_ADDRESS, i2c_address_);
+    return address;
+  }
   uint32_t get_micros() const { return micros(); }
-#endif
-
-  uint8_t array_test(UInt8Array array, uint8_t index) {
-    /* TODO:
-     *
-     * There seems to be a bug in `nanopb`.
-     *
-     *     >>> data = range(5, 0, -1)
-     *     >>> data
-     *     [5, 4, 3, 2, 1]
-     *     >>> [node.array_test(array=data, index=i) for i, d in enumerate(data)]
-     *     [5, 4, 3, 2, 1]
-     *     >>> data = range(5)
-     *     >>> data
-     *     [0, 1, 2, 3, 4]
-     *     >>> [node.array_test(array=data, index=i) for i, d in enumerate(data)]
-     *     [0, 0, 0, 0, 0]
-     *
-     * The last response should be `[0, 1, 2, 3, 4]`, not `[0, 0, 0, 0, 0]`
-     */
-    if (index < array.length) {
-      return array.data[index];
-    } else {
-      return 0xFF;
-    }
-  }
-
-#if 0
-  uint16_t uint16_array_test(UInt16Array array) {
-    return array.length;
-    //if (index < array.length) {
-      //return array.data[index];
-    //} else {
-      //return 0xFFFF;
-    //}
-  }
-#endif
 };
 
 

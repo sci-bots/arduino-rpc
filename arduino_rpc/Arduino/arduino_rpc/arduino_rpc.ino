@@ -1,3 +1,4 @@
+#include "EEPROM.h"
 #include "Wire.h"
 #include "Memory.h"
 #include "PacketParser.h"
@@ -44,7 +45,6 @@ void setup() {
   Wire.begin();
 #else
   /* Join I2C bus as slave. */
-  Wire.begin(0x10);
   Wire.onReceive(i2c_receive_event);
   Wire.onRequest(i2c_request_event);
 #endif  // #ifdef __AVR_ATmega328__
