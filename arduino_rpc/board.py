@@ -26,5 +26,5 @@ class ArduinoRPCBoard(NodeProxy):
         time.sleep(0.5)
         self._stream._serial.setDTR(True)
         time.sleep(1)
-        print 'total memory:', self.total_ram_size()
+        #print 'total memory:', self.total_ram_size()
         print 'free memory:', self.ram_free()

@@ -22,7 +22,6 @@ public:
     i2c_address_ = EEPROM.read(EEPROM__I2C_ADDRESS);
     Wire.begin(i2c_address_);
   }
-  uint32_t total_ram_size() { return ram_size(); }
   uint32_t ram_free() { return free_memory(); }
 
   void pin_mode(uint8_t pin, uint8_t mode) { return pinMode(pin, mode); }
@@ -40,7 +39,18 @@ public:
     EEPROM.write(EEPROM__I2C_ADDRESS, i2c_address_);
     return address;
   }
-  uint32_t get_micros() const { return micros(); }
+  uint8_t array_demo(UInt8Array array, uint8_t index) {
+    if (index < array.length) {
+      /* Return value from array at the specified index.
+       *
+       * This isn't particularly useful, but it makes it possible to verify
+       * that the array is received intact. */
+      return array.data[index];
+    } else {
+      /* Index is out-of-range. */
+      return 0xFF;
+    }
+  }
 };
 
 

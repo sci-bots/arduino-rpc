@@ -134,8 +134,8 @@ public:
         /* Array: {{ name }}, {{ type_info.0 }}, {{ type_info.1 }}, {{ type_info.2 }} */
         array_.{{ type_info.0 }}_.length = 0;
         array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(&array_buffer_[0]);
-        request.array_test.{{ name }}.funcs.decode = &read_int_array<{{ type_info.2 }}>;
-        request.array_test.{{ name }}.arg = &array_.{{ type_info.0 }}_;
+        request.{{ underscore_name }}.{{ name }}.funcs.decode = &read_int_array<{{ type_info.2 }}>;
+        request.{{ underscore_name }}.{{ name }}.arg = &array_.{{ type_info.0 }}_;
     {% endif -%}
     {%- endfor %}
         fields_type = (pb_field_t *){{ camel_name }}Request_fields;

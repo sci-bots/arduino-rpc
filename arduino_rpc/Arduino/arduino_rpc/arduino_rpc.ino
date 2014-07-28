@@ -8,7 +8,7 @@
 #include "packet_handler.h"
 
 
-#define PACKET_SIZE   28
+#define PACKET_SIZE   64
 /* To save RAM, the serial-port interface may be disabled by defining
  * `DISABLE_SERIAL`. */
 #ifndef DISABLE_SERIAL
