@@ -131,5 +131,5 @@ class CodeGenerator(object):
             disable_i2c = self.disable_i2c
         commands = self.get_command_processor_header_commands()
         t = jinja2.Template(self.command_processor_template)
-        return t.render({'commands': commands, 'pb_header': 'commands.pb.h',
+        return t.render({'commands': commands, 'pb_header': 'commands_pb.h',
                          'disable_i2c': disable_i2c})

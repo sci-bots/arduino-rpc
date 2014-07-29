@@ -1,9 +1,11 @@
 #include "EEPROM.h"
 #include "Wire.h"
 #include "Memory.h"
-#include "PacketParser.h"
+#include "nanopb.h"
+#include "NadaMQ.h"
+#include "ArduinoRPC.h"
+#include "Array.h"
 #include "Node.h"
-#include "CommandPacketHandler.h"
 #include "NodeCommandProcessor.h"
 #include "packet_handler.h"
 

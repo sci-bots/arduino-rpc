@@ -48,9 +48,7 @@ def get_sources():
     files that are not contained in Arduino libraries.
     '''
     return (get_sketch_directory().files('*.c*') +
-            get_nano_code_directory().files('*.c*') +
-            get_nanopb_directory().files('*.c*') +
-            nadamq.get_sources())
+            get_nano_code_directory().files('*.c*'))
 
 
 def get_firmwares():

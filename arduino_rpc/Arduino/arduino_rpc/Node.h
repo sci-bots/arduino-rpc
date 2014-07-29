@@ -40,7 +40,13 @@ public:
     return address;
   }
 
-  Int32Array ret_array_demo(Int32Array array) { return array; }
+  Int32Array ret_array_demo(Int32Array array) {
+    if (array.length > 3) {
+      array.data = array.data + array.length - 3;
+      array.length = 3;
+    }
+    return array;
+  }
 
   UInt16Array reverse_array_demo(UInt16Array array) {
     for(int i = 0; i < array.length / 2; i++) {

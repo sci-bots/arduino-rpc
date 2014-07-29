@@ -68,12 +68,12 @@ def generate_command_processor_header():
 # [1]: https://code.google.com/p/nanopb/source/browse/examples/using_union_messages/README.txt
 @needs('generate_protobuf_definitions')
 def generate_nanopb_code():
-    from arduino_rpc import package_path
+    from arduino_rpc import get_sketch_directory, package_path
 
     nanopb_home = package_path().joinpath('libs', 'nanopb').abspath()
     output_dir = package_path().joinpath('protobuf').abspath()
-    sh('cd %s; ./protoc.sh %s %s.proto .' % (output_dir, nanopb_home,
-                                             PROTO_PREFIX))
+    sh('cd %s; ./protoc.sh %s %s.proto . ; cd nano ; rename -f \'s/\.pb/_pb/g\' *.* ; sed \'s/\.pb/_pb/g\' -i *.c ; mv *.* %s' % (
+        output_dir, nanopb_home, PROTO_PREFIX, get_sketch_directory()))
 
 
 @task
