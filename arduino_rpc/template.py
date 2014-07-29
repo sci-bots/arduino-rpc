@@ -54,6 +54,30 @@ static bool read_int_array(pb_istream_t *stream, const pb_field_t *field,
 }
 
 
+template <typename Int, typename T>
+static bool write_int_array(pb_ostream_t *stream, const pb_field_t *field,
+                            void * const *arg) {
+    Int const &array = *((Int const *)(*arg));
+    uint64_t value;
+
+    if (!pb_encode_tag(stream, PB_WT_STRING, field->tag)) {
+      return false;
+    }
+    pb_ostream_t substream = PB_OSTREAM_SIZING;
+
+    for (int i = 0; i < array.length; i++) {
+      pb_encode_varint(&substream, array.data[i]);
+    }
+
+    pb_encode_varint(stream, substream.bytes_written);
+
+    for (int i = 0; i < array.length; i++) {
+      pb_encode_varint(stream, array.data[i]);
+    }
+    return true;
+}
+
+
 template <typename Obj>
 class CommandProcessor {
   /* # `CommandProcessor` #
@@ -74,6 +98,10 @@ protected:
     UInt8Array uint8_t_;
     UInt16Array uint16_t_;
   } array_;
+  union {
+    UInt8Array uint8_t_;
+    UInt16Array uint16_t_;
+  } return_array_;
 public:
   CommandProcessor(Obj &obj) : obj_(obj) {}
 
@@ -266,7 +294,14 @@ public:
     {%- for camel_name, underscore_name, return_type, args in commands %}
       case CommandType_{{ underscore_name|upper }}:
         fields_type = (pb_field_t *){{ camel_name }}Response_fields;
-        {% if return_type %}response.{{ underscore_name }}.result ={% endif %}
+        // `return_type`: {{ return_type }}
+        {% if return_type -%}
+        {%- if return_type.1 == 'array' %}
+        response.{{ underscore_name }}.result.funcs.encode = &write_int_array<{{ return_type.2 }}, {{ return_type.0 }}>;
+        response.{{ underscore_name }}.result.arg = &return_array_.{{ return_type.0 }}_;
+        return_array_.{{ return_type.0 }}_ =
+        {% else %}
+        response.{{ underscore_name }}.result ={% endif %}{% endif %}
         obj_.{{ underscore_name }}(
         {%- for name, type_info in args -%}
         {%- if type_info.1 == 'array' %}
@@ -335,7 +370,11 @@ message ForwardI2cRequestResponse { required sint32 result = 1; }
 {%- for camel_name, underscore_name, return_type, args in commands -%}
 message {{ camel_name }}Response {
 {%- if return_type %}
+{%- if return_type|length == 2 %}
+    {{ return_type.1 }} {{ return_type.0 }} result = 1 [packed=true];
+{%- else %}
     required {{ return_type }} result = 1;
+{%- endif %}
 {% endif -%}
 }
 {%- endfor %}

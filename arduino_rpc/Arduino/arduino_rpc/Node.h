@@ -39,17 +39,16 @@ public:
     EEPROM.write(EEPROM__I2C_ADDRESS, i2c_address_);
     return address;
   }
-  uint8_t array_demo(UInt8Array array, uint8_t index) {
-    if (index < array.length) {
-      /* Return value from array at the specified index.
-       *
-       * This isn't particularly useful, but it makes it possible to verify
-       * that the array is received intact. */
-      return array.data[index];
-    } else {
-      /* Index is out-of-range. */
-      return 0xFF;
+
+  UInt8Array ret_array_demo(UInt8Array array) { return array; }
+
+  UInt16Array reverse_array_demo(UInt16Array array) {
+    for(int i = 0; i < array.length / 2; i++) {
+      uint16_t temp = array.data[i];
+      array.data[i] = array.data[array.length - 1 - i];
+      array.data[array.length - 1 - i] = temp;
     }
+    return array;
   }
 };
 

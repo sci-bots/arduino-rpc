@@ -25,6 +25,20 @@ class CodeGenerator(object):
 
         protobuf_methods = OrderedDict()
 
+        def resolve_array_type(arg_type):
+            declaration = arg_type.get_declaration()
+            array_children = list(declaration.get_children())
+            array_fields = OrderedDict([(c.displayname, c)
+                                        for c in array_children if
+                                        c.displayname])
+            if not set(array_fields.keys()).difference(('length',
+                                                        'data')):
+                length_type = array_fields['length'].type.get_canonical().kind
+                atom_type = (array_fields['data'].type.get_pointee()
+                             .get_canonical().kind)
+            return OrderedDict([('length_type', length_type),
+                                ('atom_type', atom_type)])
+
         for method_name, signatures in methods.iteritems():
             if len(signatures) > 1:
                 raise ValueError('Overloaded methods are currently not '
@@ -32,23 +46,14 @@ class CodeGenerator(object):
                                  'signature for each method.')
             s = signatures[0]
             protobuf_methods[method_name] = OrderedDict()
-            protobuf_methods[method_name]['return_type'] = s['return_type']
+            return_type = s['return_type'].get_canonical().kind
+            if return_type == TypeKind.RECORD:
+                return_type = resolve_array_type(s['return_type'])
+            protobuf_methods[method_name]['return_type'] = return_type
             args = []
             for k, a in s['arguments'].iteritems():
                 if isinstance(a, Cursor) and a.type.kind == TypeKind.RECORD:
-                    declaration = a.type.get_declaration()
-                    array_children = list(declaration.get_children())
-                    array_fields = OrderedDict([(c.displayname, c)
-                                                for c in array_children if
-                                                c.displayname])
-                    if not set(array_fields.keys()).difference(('length',
-                                                                'data')):
-                        length_type = (array_fields['length'].type
-                                       .get_canonical().kind)
-                        atom_type = (array_fields['data'].type.get_pointee()
-                                     .get_canonical().kind)
-                    args.append((k, OrderedDict([('length_type', length_type),
-                                                 ('atom_type', atom_type)])))
+                    args.append((k, resolve_array_type(a.type)))
                 else:
                     args.append((k, a))
             protobuf_methods[method_name]['arguments'] = args
@@ -107,6 +112,8 @@ class CodeGenerator(object):
             return_type = get_stdint_type(type_info['return_type'])
             arguments = [[k, get_stdint_type(a)] for k, a in
                          type_info['arguments']]
+            if return_type and return_type[1] == 'array':
+                return_type += (array_types[return_type[0]], )
             for arg in arguments:
                 if arg[1][1] == 'array':
                     arg[1] += (array_types[arg[1][0]], )

@@ -17,4 +17,11 @@ public:
   uint16_t *data;
 };
 
+
+class FloatArray {
+public:
+  uint8_t length;
+  float *data;
+};
+
 #endif  // #ifndef ___ARRAY__H___
