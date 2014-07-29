@@ -9,73 +9,15 @@ COMMAND_PROCESSOR_TEMPLATE = r'''
 
 #include "UnionMessage.h"
 #include "Array.h"
+#include "ArraySerialization.h"
 #include "{{ pb_header }}"
 
-
-struct buffer_with_len {
-  uint8_t buffer[16];
-  uint8_t length;
-};
 
 {%- if disable_i2c %}
 #ifndef DISABLE_I2C
 #define DISABLE_I2C
 #endif
 {%- endif %}
-
-static bool read_string(pb_istream_t *stream, const pb_field_t *field,
-                        void **arg) {
-    buffer_with_len &buffer = *((buffer_with_len*)(*arg));
-    size_t len = stream->bytes_left;
-
-    if (len > sizeof(buffer.buffer) - 1 ||
-        !pb_read(stream, &buffer.buffer[0], len)) {
-      buffer.length = 0;
-      return false;
-    }
-
-    buffer.length = len;
-    return true;
-}
-
-
-template <typename Int>
-static bool read_int_array(pb_istream_t *stream, const pb_field_t *field,
-                           void **arg) {
-    Int &array = *((Int*)(*arg));
-    uint64_t value;
-
-    if (!pb_decode_varint(stream, &value)) {
-      return false;
-    }
-    array.data[array.length] = value;
-    array.length++;
-    return true;
-}
-
-
-template <typename Int, typename T>
-static bool write_int_array(pb_ostream_t *stream, const pb_field_t *field,
-                            void * const *arg) {
-    Int const &array = *((Int const *)(*arg));
-    uint64_t value;
-
-    if (!pb_encode_tag(stream, PB_WT_STRING, field->tag)) {
-      return false;
-    }
-    pb_ostream_t substream = PB_OSTREAM_SIZING;
-
-    for (int i = 0; i < array.length; i++) {
-      pb_encode_varint(&substream, array.data[i]);
-    }
-
-    pb_encode_varint(stream, substream.bytes_written);
-
-    for (int i = 0; i < array.length; i++) {
-      pb_encode_varint(stream, array.data[i]);
-    }
-    return true;
-}
 
 
 template <typename Obj>
@@ -95,12 +37,22 @@ protected:
 #endif  // #ifndef DISABLE_I2C
   uint32_t array_buffer_[10];
   union {
+    Int8Array int8_t_;
+    Int16Array int16_t_;
+    Int32Array int32_t_;
     UInt8Array uint8_t_;
     UInt16Array uint16_t_;
+    UInt32Array uint32_t_;
+    FloatArray float_;
   } array_;
   union {
+    Int8Array int8_t_;
+    Int16Array int16_t_;
+    Int32Array int32_t_;
     UInt8Array uint8_t_;
     UInt16Array uint16_t_;
+    UInt32Array uint32_t_;
+    FloatArray float_;
   } return_array_;
 public:
   CommandProcessor(Obj &obj) : obj_(obj) {}
@@ -162,7 +114,12 @@ public:
         /* Array: {{ name }}, {{ type_info.0 }}, {{ type_info.1 }}, {{ type_info.2 }} */
         array_.{{ type_info.0 }}_.length = 0;
         array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(&array_buffer_[0]);
-        request.{{ underscore_name }}.{{ name }}.funcs.decode = &read_int_array<{{ type_info.2 }}>;
+        request.{{ underscore_name }}.{{ name }}.funcs.decode = &read_
+        {%- if type_info.0 == 'float' -%}float
+        {%- else %}{%- if type_info.0.startswith('u') %}uint
+        {%- else %}int
+        {%- endif -%}{%- endif -%}
+        _array<{{ type_info.2 }}>;
         request.{{ underscore_name }}.{{ name }}.arg = &array_.{{ type_info.0 }}_;
     {% endif -%}
     {%- endfor %}
@@ -297,7 +254,16 @@ public:
         // `return_type`: {{ return_type }}
         {% if return_type -%}
         {%- if return_type.1 == 'array' %}
-        response.{{ underscore_name }}.result.funcs.encode = &write_int_array<{{ return_type.2 }}, {{ return_type.0 }}>;
+        response.{{ underscore_name }}.result.funcs.encode = &write_
+        {%- if return_type.0 == 'float' -%}float
+        {%- else %}{% if return_type.0.startswith('u') %}uint
+        {%- else %}int
+        {%- endif -%}{% endif -%}
+        _array<{{ return_type.2 }}
+        {%- if return_type.0 != 'float' -%}
+        , {{ return_type.0 }}
+        {%- endif -%}
+        >;
         response.{{ underscore_name }}.result.arg = &return_array_.{{ return_type.0 }}_;
         return_array_.{{ return_type.0 }}_ =
         {% else %}

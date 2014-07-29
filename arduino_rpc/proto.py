@@ -105,8 +105,13 @@ class CodeGenerator(object):
     def get_command_processor_header_commands(self):
         commands = []
         array_types = OrderedDict([
+            ('int8_t', 'Int8Array'),
+            ('int16_t', 'Int16Array'),
+            ('int32_t', 'Int32Array'),
             ('uint8_t', 'UInt8Array'),
             ('uint16_t', 'UInt16Array'),
+            ('uint32_t', 'UInt32Array'),
+            ('float', 'FloatArray'),
         ])
         for name, type_info in self.get_methods().iteritems():
             return_type = get_stdint_type(type_info['return_type'])
