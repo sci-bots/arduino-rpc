@@ -17,6 +17,7 @@ class Node {
 public:
   static const uint16_t EEPROM__I2C_ADDRESS = 0x00;
   uint8_t i2c_address_;
+  uint8_t output_buffer[10];
 
   Node() {
     i2c_address_ = EEPROM.read(EEPROM__I2C_ADDRESS);
@@ -55,6 +56,29 @@ public:
       array.data[array.length - 1 - i] = temp;
     }
     return array;
+  }
+
+  UInt8Array str_demo() {
+    /* # `str_demo` #
+     *
+     * This method demonstrates how to return a string of characters stored in
+     * program memory as an array of bytes.
+     *
+     * ## Example Python code ##
+     *
+     *     >>> import numpy as np
+     *     >>> from arduino_rpc.board import ArduinoRPCBoard
+     *     >>> b = ArduinoRPCBoard('/dev/ttyUSB1')
+     *
+     *     free memory: 270
+     *     >>> np.array(b.str_demo(), dtype=np.uint8).tostring()
+     *     'hello'
+     */
+    UInt8Array result;
+    result.data = reinterpret_cast<uint8_t *>(&output_buffer[0]);
+    strcpy_P(reinterpret_cast<char *>(result.data), PSTR("hello"));
+    result.length = 5;
+    return result;
   }
 };
 
