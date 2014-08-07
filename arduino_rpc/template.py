@@ -116,9 +116,10 @@ public:
         array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(&array_buffer_[0]);
         request.{{ underscore_name }}.{{ name }}.funcs.decode = &read_
         {%- if type_info.0 == 'float' -%}float
+        {%- else %}{%- if return_type.0 == 'uint8_t' -%}byte
         {%- else %}{%- if type_info.0.startswith('u') %}uint
         {%- else %}int
-        {%- endif -%}{%- endif -%}
+        {%- endif -%}{%- endif -%}{%- endif -%}
         _array<{{ type_info.2 }}>;
         request.{{ underscore_name }}.{{ name }}.arg = &array_.{{ type_info.0 }}_;
     {% endif -%}
@@ -256,14 +257,17 @@ public:
         {%- if return_type.1 == 'array' %}
         response.{{ underscore_name }}.result.funcs.encode = &write_
         {%- if return_type.0 == 'float' -%}float
+        {%- else %}{%- if return_type.0 == 'uint8_t' -%}byte
         {%- else %}{% if return_type.0.startswith('u') %}uint
         {%- else %}int
-        {%- endif -%}{% endif -%}
-        _array<{{ return_type.2 }}
+        {%- endif -%}{% endif -%}{%- endif -%}
+        _array
+        {%- if return_type.0 != 'uint8_t' -%}
+        <{{ return_type.2 }}
         {%- if return_type.0 != 'float' -%}
         , {{ return_type.0 }}
         {%- endif -%}
-        >;
+        >{%- endif -%};
         response.{{ underscore_name }}.result.arg = &return_array_.{{ return_type.0 }}_;
         return_array_.{{ return_type.0 }}_ =
         {% else %}
@@ -321,7 +325,8 @@ message ForwardI2cRequestRequest {
 message {{ camel_name }}Request {
 {%- for arg in args -%}
 {%- if arg.1|length == 2 %}
-    {{ arg.1.1 }} {{ arg.1.0 }} {{ arg.0 }} = {{ loop.index }} [packed=true];
+    {{ arg.1.1 }} {{ arg.1.0 }} {{ arg.0 }} = {{ loop.index }}
+    {%- if arg.1.0 != 'bytes' %} [packed=true] {% endif %};
 {%- else %}
     required {{ arg.1 }} {{ arg.0 }} = {{ loop.index }};
 {%- endif %}
@@ -337,7 +342,8 @@ message ForwardI2cRequestResponse { required sint32 result = 1; }
 message {{ camel_name }}Response {
 {%- if return_type %}
 {%- if return_type|length == 2 %}
-    {{ return_type.1 }} {{ return_type.0 }} result = 1 [packed=true];
+    {{ return_type.1 }} {{ return_type.0 }} result = 1
+    {%- if return_type.0 != 'bytes' %} [packed=true] {% endif %};
 {%- else %}
     required {{ return_type }} result = 1;
 {%- endif %}
