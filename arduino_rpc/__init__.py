@@ -12,7 +12,7 @@ def get_sketch_directory():
     '''
     Return directory containing the Arduino sketch.
     '''
-    return package_path().joinpath('Arduino').dirs()[0]
+    return package_path().joinpath('Arduino', package_path().name)
 
 
 def get_nanopb_directory():
