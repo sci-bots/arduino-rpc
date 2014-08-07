@@ -1,6 +1,6 @@
 import sys
 
-from arduino_build import ArduinoBuildContext
+from arduino_scons.arduino_build import ArduinoBuildContext
 from path_helpers import path
 
 package = None

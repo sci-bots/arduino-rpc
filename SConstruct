@@ -4,8 +4,8 @@ import sys
 
 from path_helpers import path
 
-import auto_config
-from git_util import GitUtil
+import arduino_scons.auto_config
+from arduino_scons.git_util import GitUtil
 from arduino_rpc import package_path, get_sketch_directory
 
 
