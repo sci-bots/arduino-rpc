@@ -1,7 +1,6 @@
 import sys
 import time
 
-import bitarray
 from nadamq.command_proxy import (NodeProxy, CommandRequestManager,
                                   CommandRequestManagerDebug, SerialStream)
 from arduino_rpc.requests import (REQUEST_TYPES, CommandResponse,
