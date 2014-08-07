@@ -6,7 +6,7 @@
 
 class Int8Array {
 public:
-  uint8_t length;
+  uint16_t length;
   int8_t *data;
 };
 
@@ -20,35 +20,35 @@ public:
 
 class Int32Array {
 public:
-  uint32_t length;
+  uint16_t length;
   int32_t *data;
 };
 
 
 class UInt8Array {
 public:
-  uint8_t length;
+  uint16_t length;
   uint8_t *data;
 };
 
 
 class UInt16Array {
 public:
-  uint8_t length;
+  uint16_t length;
   uint16_t *data;
 };
 
 
 class UInt32Array {
 public:
-  uint8_t length;
+  uint16_t length;
   uint32_t *data;
 };
 
 
 class FloatArray {
 public:
-  uint8_t length;
+  uint16_t length;
   float *data;
 };
 
