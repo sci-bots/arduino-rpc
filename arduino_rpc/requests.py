@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from .protobuf_commands import *
 
+
 try:
     eval('CommandType')
 except NameError:

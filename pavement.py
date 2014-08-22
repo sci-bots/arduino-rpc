@@ -30,8 +30,8 @@ setup(name='wheeler.arduino_rpc',
       author_email='christian@fobel.net',
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       license='GPLv2',
-      install_requires=['nadamq', 'path_helpers', 'arduino_helpers',
-                        'nanopb_helpers', 'clang_helpers'],
+      install_requires=['arduino_scons', 'nadamq', 'path_helpers',
+                        'arduino_helpers', 'nanopb_helpers', 'clang_helpers'],
       packages=['arduino_rpc'],
       package_data=arduino_rpc_files)
 
