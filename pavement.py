@@ -31,7 +31,7 @@ setup(name='wheeler.arduino_rpc',
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       license='GPLv2',
       install_requires=['nadamq', 'path_helpers', 'arduino_helpers',
-                        'clang_helpers'],
+                        'nanopb_helpers', 'clang_helpers'],
       packages=['arduino_rpc'],
       package_data=arduino_rpc_files)
 
@@ -69,26 +69,34 @@ def generate_command_processor_header():
 @needs('generate_protobuf_definitions')
 def generate_nanopb_code():
     from arduino_rpc import get_sketch_directory, package_path
+    from nanopb_helpers import compile_nanopb
 
-    nanopb_home = package_path().joinpath('libs', 'nanopb').abspath()
     output_dir = package_path().joinpath('protobuf').abspath()
-    sh('cd %s; ./protoc.sh %s %s.proto . ; cd nano ; rename -f \'s/\.pb/_pb/g\' *.* ; sed \'s/\.pb/_pb/g\' -i *.c ; mv *.* %s' % (
-        output_dir, nanopb_home, PROTO_PREFIX, get_sketch_directory()))
+    proto_path = output_dir.joinpath(PROTO_PREFIX + '.proto')
+    nanopb = compile_nanopb(proto_path)
+    header_name = PROTO_PREFIX + '_pb.h'
+    source_name = PROTO_PREFIX + '_pb.c'
+    get_sketch_directory().joinpath(header_name).write_bytes(nanopb['header'])
+    get_sketch_directory().joinpath(source_name).write_bytes(
+        nanopb['source'].replace('{{ header_path }}', header_name))
 
 
 @task
-@needs('generate_nanopb_code')
-def copy_nanopb_python_module():
+@needs('generate_protobuf_definitions')
+def generate_pb_python_module():
     from arduino_rpc import package_path
+    from nanopb_helpers import compile_pb
 
-    code_dir = package_path().joinpath('protobuf', 'py').abspath()
     output_dir = package_path().abspath()
-    protobuf_commands_file = list(code_dir.files('*_pb2.py'))[0]
-    protobuf_commands_file.copy(output_dir.joinpath('protobuf_commands.py'))
+    proto_path = package_path().joinpath('protobuf').joinpath(PROTO_PREFIX +
+                                                              '.proto')
+    pb = compile_pb(proto_path)
+    output_dir.joinpath('protobuf_commands.py').write_bytes(pb['python'])
 
 
 @task
-@needs('copy_nanopb_python_module', 'generate_command_processor_header')
+@needs('generate_nanopb_code', 'generate_pb_python_module',
+       'generate_command_processor_header')
 @cmdopts([('sconsflags=', 'f', 'Flags to pass to SCons.'),
           ('boards=', 'b', 'Comma-separated list of board names to compile '
            'for (e.g., `uno`).')])
