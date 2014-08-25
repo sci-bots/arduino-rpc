@@ -5,6 +5,7 @@
 #include <EEPROM.h>
 #include "Memory.h"
 #include "Array.h"
+#include "custom_pb.h"
 #define BROADCAST_ADDRESS 0x00
 
 
@@ -50,7 +51,7 @@ public:
   }
 
   UInt16Array reverse_array_demo(UInt16Array array) {
-    for(int i = 0; i < array.length / 2; i++) {
+    for(int i = 0; i < static_cast<int>(array.length / 2); i++) {
       uint16_t temp = array.data[i];
       array.data[i] = array.data[array.length - 1 - i];
       array.data[array.length - 1 - i] = temp;
@@ -78,6 +79,53 @@ public:
     result.data = reinterpret_cast<uint8_t *>(&output_buffer[0]);
     strcpy_P(reinterpret_cast<char *>(result.data), PSTR("hello"));
     result.length = 5;
+    return result;
+  }
+
+  UInt8Array pin_state(uint8_t const pin_id) {
+    /* # `pin_state` #
+     *
+     * This method demonstrates how to return an encoded custom Protocol
+     * Buffers message type as a byte string.
+     *
+     * ## Example Python code ##
+     *
+     *
+     *     >>> from arduino_rpc.protobuf_custom import PinState
+     *     >>> from arduino_rpc.board import ArduinoRPCBoard
+     *     >>> b = ArduinoRPCBoard('/dev/ttyUSB0')
+     *
+     *     free memory: 190
+     *
+     * First, we read the current state of pin 13.
+     *
+     *     >>> p = PinState.FromString(b.pin_state(pin_id=13))
+     *     >>> dict([(k, getattr(p, k)) for k in ('pin_id', 'state')])
+     *     {'pin_id': 13, 'state': False}
+     *
+     * Notice that pin 13 is off _(i.e., `False`)_.  Now, we turn pin 13 on by
+     * writing a value of `1`, and read the pin state again.
+     *
+     *     >>> b.digital_write(pin=13, value=1)
+     *     <arduino_rpc.protobuf_commands.DigitalWriteResponse object at 0x7fb364b37ec0>
+     *     >>> p = PinState.FromString(b.pin_state(pin_id=13))
+     *     >>> dict([(k, getattr(p, k)) for k in ('pin_id', 'state')])
+     *     {'pin_id': 13, 'state': True}
+     *
+     * Notice that pin 13 is now on _(i.e., `True`)_.
+     */
+    PinState state;
+
+    state.pin_id = pin_id;
+    state.state = digitalRead(pin_id);
+
+    pb_ostream_t stream = pb_ostream_from_buffer(output_buffer,
+                                                 sizeof(output_buffer));
+    pb_encode(&stream, PinState_fields, &state);
+
+    UInt8Array result;
+    result.data = &output_buffer[0];
+    result.length = stream.bytes_written;
     return result;
   }
 };

@@ -1,0 +1,8 @@
+message PinState {
+  required uint32 pin_id = 1;
+  required bool state = 2;
+}
+
+message PinStates {
+  repeated PinState states = 1;
+}

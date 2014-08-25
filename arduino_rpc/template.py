@@ -120,7 +120,7 @@ public:
         {%- else %}{%- if type_info.0.startswith('u') %}uint
         {%- else %}int
         {%- endif -%}{%- endif -%}{%- endif -%}
-        _array<{{ type_info.2 }}>;
+        _array{%- if return_type.0 != 'uint8_t' -%}<{{ type_info.2 }}>{%- endif %};
         request.{{ underscore_name }}.{{ name }}.arg = &array_.{{ type_info.0 }}_;
     {% endif -%}
     {%- endfor %}

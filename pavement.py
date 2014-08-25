@@ -71,14 +71,19 @@ def generate_nanopb_code():
     from arduino_rpc import get_sketch_directory, package_path
     from nanopb_helpers import compile_nanopb
 
-    output_dir = package_path().joinpath('protobuf').abspath()
-    proto_path = output_dir.joinpath(PROTO_PREFIX + '.proto')
-    nanopb = compile_nanopb(proto_path)
-    header_name = PROTO_PREFIX + '_pb.h'
-    source_name = PROTO_PREFIX + '_pb.c'
-    get_sketch_directory().joinpath(header_name).write_bytes(nanopb['header'])
-    get_sketch_directory().joinpath(source_name).write_bytes(
-        nanopb['source'].replace('{{ header_path }}', header_name))
+    protobuf_dir = package_path().joinpath('protobuf').abspath()
+    for proto_path in protobuf_dir.files('*.proto'):
+        prefix = proto_path.namebase
+        nanopb = compile_nanopb(proto_path)
+        header_name = prefix + '_pb.h'
+        source_name = prefix + '_pb.c'
+        sketch = get_sketch_directory()
+        print 'write `%s` and `%s` to `%s`' % (header_name, source_name,
+                                               sketch)
+        sketch.joinpath(header_name).write_bytes(nanopb['header'])
+        sketch.joinpath(source_name).write_bytes(nanopb['source']
+                                                 .replace('{{ header_path }}',
+                                                          header_name))
 
 
 @task
@@ -88,10 +93,12 @@ def generate_pb_python_module():
     from nanopb_helpers import compile_pb
 
     output_dir = package_path().abspath()
-    proto_path = package_path().joinpath('protobuf').joinpath(PROTO_PREFIX +
-                                                              '.proto')
-    pb = compile_pb(proto_path)
-    output_dir.joinpath('protobuf_commands.py').write_bytes(pb['python'])
+    protobuf_dir = package_path().joinpath('protobuf').abspath()
+    for proto_path in protobuf_dir.files('*.proto'):
+        prefix = proto_path.namebase
+        pb = compile_pb(proto_path)
+        output_dir.joinpath('protobuf_%s.py' %
+                            prefix).write_bytes(pb['python'])
 
 
 @task
