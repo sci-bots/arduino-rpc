@@ -114,15 +114,22 @@ public:
      *
      * Notice that pin 13 is now on _(i.e., `True`)_.
      */
+
+    /* ## Serialize Protocol Buffer message ## */
+    /*  - Construct and populate `PinState` Protocol Buffer message. */
     PinState state;
 
     state.pin_id = pin_id;
     state.state = digitalRead(pin_id);
 
+    /*  - Wrap `output_buffer` array as a `nanopb` output stream. */
     pb_ostream_t stream = pb_ostream_from_buffer(output_buffer,
                                                  sizeof(output_buffer));
+    /*  - Serialize/encode `state` structure to output stream. */
     pb_encode(&stream, PinState_fields, &state);
 
+    /* Construct `UInt8Array` return type, using the address of the output
+     * buffer and the number of bytes written to the output stream. */
     UInt8Array result;
     result.data = &output_buffer[0];
     result.length = stream.bytes_written;
