@@ -1,20 +1,16 @@
 #ifndef ___ARRAY_SERIALIZATION__H___
 #define ___ARRAY_SERIALIZATION__H___
 
-
-struct buffer_with_len {
-  uint8_t buffer[16];
-  uint8_t length;
-};
+#include "Array.h"
 
 
 static bool read_string(pb_istream_t *stream, const pb_field_t *field,
                         void **arg) {
-    buffer_with_len &buffer = *((buffer_with_len*)(*arg));
+    UInt8Array &buffer = *((buffer_with_len*)(*arg));
     size_t len = stream->bytes_left;
 
-    if (len > sizeof(buffer.buffer) - 1 ||
-        !pb_read(stream, &buffer.buffer[0], len)) {
+    if (len > sizeof(buffer.data) - 1 ||
+        !pb_read(stream, &buffer.data[0], len)) {
       buffer.length = 0;
       return false;
     }

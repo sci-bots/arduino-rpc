@@ -32,10 +32,7 @@ class CommandProcessor {
    * must contain response values. */
 protected:
   Obj &obj_;
-#ifndef DISABLE_I2C
-  buffer_with_len string_buffer_;
-#endif  // #ifndef DISABLE_I2C
-  uint32_t array_buffer_[10];
+  uint32_t array_buffer_[26];
   union {
     Int8Array int8_t_;
     Int16Array int16_t_;
@@ -102,8 +99,10 @@ public:
     switch (request_type) {
 #ifndef DISABLE_I2C
       case CommandType_FORWARD_I2C_REQUEST:
+        array_.uint8_t_.length = 0;
+        array_.uint8_t_.data = reinterpret_cast<uint8_t *>(&array_buffer_[0]);
         request.forward_i2c_request.request.funcs.decode = &read_string;
-        request.forward_i2c_request.request.arg = &string_buffer_;
+        request.forward_i2c_request.request.arg = &array_.uint8_t_;
         fields_type = (pb_field_t *)ForwardI2cRequestRequest_fields;
         break;
 #endif  // #ifndef DISABLE_I2C
@@ -173,7 +172,7 @@ public:
          *
          * [1]: http://gammon.com.au/i2c-summary */
         Wire.beginTransmission((uint8_t)request.forward_i2c_request.address);
-        Wire.write(string_buffer_.buffer, string_buffer_.length);
+        Wire.write(array_.uint8_t_.data, array_.uint8_t_.length);
         response.forward_i2c_request.result = Wire.endTransmission();
         if (response.forward_i2c_request.result != 0) {
           /* Transmission failed.  Perhaps slave was not ready or not
