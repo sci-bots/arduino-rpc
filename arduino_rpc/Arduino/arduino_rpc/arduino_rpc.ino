@@ -11,11 +11,17 @@
 
 
 #define PACKET_SIZE   64
+#define COMMAND_ARRAY_BUFFER_SIZE   56
 /* To save RAM, the serial-port interface may be disabled by defining
  * `DISABLE_SERIAL`. */
 #ifndef DISABLE_SERIAL
 uint8_t packet_buffer[PACKET_SIZE];
 #endif  // #ifndef DISABLE_SERIAL
+
+/*  - Allocate buffer for command-processor to extract/write array data. */
+uint8_t command_array_buffer[COMMAND_ARRAY_BUFFER_SIZE];
+UInt8Array command_array = {COMMAND_ARRAY_BUFFER_SIZE,
+                            &command_array_buffer[0]};
 
 uint8_t i2c_packet_buffer[PACKET_SIZE];
 uint8_t processing_i2c_request = false;
@@ -23,7 +29,7 @@ uint8_t i2c_response_size_sent = false;
 FixedPacket i2c_packet;
 
 Node node;
-CommandProcessor<Node> command_processor(node);
+CommandProcessor<Node> command_processor(node, command_array);
 
 #ifndef DISABLE_SERIAL
 typedef CommandPacketHandler<Stream, CommandProcessor<Node> > Handler;
