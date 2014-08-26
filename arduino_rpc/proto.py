@@ -1,4 +1,3 @@
-import re
 from collections import OrderedDict
 
 import jinja2
@@ -6,6 +5,7 @@ from protobuf_helpers import underscore_to_camelcase, get_protobuf_type
 from clang_helpers import (open_cpp_source, extract_class_declarations,
                            extract_method_signatures, get_stdint_type)
 from clang_helpers.clang.cindex import Cursor, TypeKind
+from nanopb_helpers import compile_nanopb, compile_pb
 
 from .template import COMMAND_PROCESSOR_TEMPLATE, COMMAND_PROTO_DEFINITIONS
 
@@ -133,3 +133,39 @@ class CodeGenerator(object):
         t = jinja2.Template(self.command_processor_template)
         return t.render({'commands': commands, 'pb_header': 'commands_pb.h',
                          'disable_i2c': disable_i2c})
+
+
+def generate_nanopb_code(source_dir, destination_dir):
+    for proto_path in source_dir.files('*.proto'):
+        prefix = proto_path.namebase
+        nanopb = compile_nanopb(proto_path)
+        header_name = prefix + '_pb.h'
+        source_name = prefix + '_pb.c'
+        destination_dir.joinpath(header_name).write_bytes(nanopb['header'])
+        destination_dir.joinpath(source_name).write_bytes(
+            nanopb['source'].replace('{{ header_path }}', header_name))
+
+
+def generate_pb_python_module(source_dir, destination_dir):
+    for proto_path in source_dir.files('*.proto'):
+        prefix = proto_path.namebase
+        pb = compile_pb(proto_path)
+        destination_dir.joinpath('protobuf_%s.py' %
+                                 prefix).write_bytes(pb['python'])
+
+
+def generate_protobuf_definitions(source_dir, output_dir,
+                                  protobuf_prefix='commands'):
+    code_generator = CodeGenerator(source_dir.joinpath('Node.h'))
+    definition_str = code_generator.get_protobuf_definitions()
+    output_file = output_dir.joinpath('%s.proto' % protobuf_prefix)
+    with output_file.open('wb') as output:
+        output.write(definition_str)
+
+
+def generate_command_processor_header(source_dir, output_dir):
+    code_generator = CodeGenerator(source_dir.joinpath('Node.h'))
+    header_str = code_generator.get_command_processor_header()
+    output_file = output_dir.joinpath('NodeCommandProcessor.h')
+    with output_file.open('wb') as output:
+        output.write(header_str)

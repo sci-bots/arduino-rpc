@@ -7,7 +7,15 @@ from paver.setuputils import setup, find_package_data
 import version
 sys.path.append(path('.').abspath())
 try:
-    from arduino_rpc.proto import CodeGenerator
+    from arduino_rpc.proto import (CodeGenerator,
+                                   generate_nanopb_code as
+                                   _generate_nanopb_code,
+                                   generate_pb_python_module as
+                                   _generate_pb_python_module,
+                                   generate_protobuf_definitions as
+                                   _generate_protobuf_definitions,
+                                   generate_command_processor_header as
+                                   _generate_command_processor_header)
 except ImportError:
     import warnings
 
@@ -40,24 +48,16 @@ setup(name='wheeler.arduino_rpc',
 def generate_protobuf_definitions():
     from arduino_rpc import get_sketch_directory, package_path
 
-    code_generator = CodeGenerator(get_sketch_directory().joinpath('Node.h'))
-    definition_str = code_generator.get_protobuf_definitions()
-    output_dir = package_path().joinpath('protobuf').abspath()
-    output_file = output_dir.joinpath('%s.proto' % PROTO_PREFIX)
-    with output_file.open('wb') as output:
-        output.write(definition_str)
+    protobuf_dir = package_path().joinpath('protobuf').abspath()
+    _generate_protobuf_definitions(get_sketch_directory(), protobuf_dir)
 
 
 @task
 def generate_command_processor_header():
     from arduino_rpc import get_sketch_directory
 
-    code_generator = CodeGenerator(get_sketch_directory().joinpath('Node.h'))
-    header_str = code_generator.get_command_processor_header()
-    output_dir = get_sketch_directory()
-    output_file = output_dir.joinpath('NodeCommandProcessor.h')
-    with output_file.open('wb') as output:
-        output.write(header_str)
+    _generate_protobuf_definitions(get_sketch_directory(),
+                                   get_sketch_directory())
 
 
 @task
@@ -69,36 +69,20 @@ def generate_command_processor_header():
 @needs('generate_protobuf_definitions')
 def generate_nanopb_code():
     from arduino_rpc import get_sketch_directory, package_path
-    from nanopb_helpers import compile_nanopb
 
     protobuf_dir = package_path().joinpath('protobuf').abspath()
-    for proto_path in protobuf_dir.files('*.proto'):
-        prefix = proto_path.namebase
-        nanopb = compile_nanopb(proto_path)
-        header_name = prefix + '_pb.h'
-        source_name = prefix + '_pb.c'
-        sketch = get_sketch_directory()
-        print 'write `%s` and `%s` to `%s`' % (header_name, source_name,
-                                               sketch)
-        sketch.joinpath(header_name).write_bytes(nanopb['header'])
-        sketch.joinpath(source_name).write_bytes(nanopb['source']
-                                                 .replace('{{ header_path }}',
-                                                          header_name))
+    sketch = get_sketch_directory()
+    _generate_nanopb_code(protobuf_dir, sketch)
 
 
 @task
 @needs('generate_protobuf_definitions')
 def generate_pb_python_module():
     from arduino_rpc import package_path
-    from nanopb_helpers import compile_pb
 
-    output_dir = package_path().abspath()
     protobuf_dir = package_path().joinpath('protobuf').abspath()
-    for proto_path in protobuf_dir.files('*.proto'):
-        prefix = proto_path.namebase
-        pb = compile_pb(proto_path)
-        output_dir.joinpath('protobuf_%s.py' %
-                            prefix).write_bytes(pb['python'])
+    output_dir = package_path().abspath()
+    _generate_pb_python_module(protobuf_dir, output_dir)
 
 
 @task
