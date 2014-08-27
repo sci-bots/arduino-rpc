@@ -56,8 +56,8 @@ def generate_protobuf_definitions():
 def generate_command_processor_header():
     from arduino_rpc import get_sketch_directory
 
-    _generate_protobuf_definitions(get_sketch_directory(),
-                                   get_sketch_directory())
+    _generate_command_processor_header(get_sketch_directory(),
+                                       get_sketch_directory())
 
 
 @task

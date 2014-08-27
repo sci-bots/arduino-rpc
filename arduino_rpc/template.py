@@ -108,7 +108,7 @@ public:
     switch (request_type) {
 #ifndef DISABLE_I2C
       case CommandType_FORWARD_I2C_REQUEST:
-        array_.uint8_t_.length = 0;
+        array_.uint8_t_.length = array_buffer_.length;
         array_.uint8_t_.data = array_buffer_.data;
         request.forward_i2c_request.request.funcs.decode = &read_string;
         request.forward_i2c_request.request.arg = &array_.uint8_t_;

@@ -6,11 +6,10 @@
 
 static bool read_string(pb_istream_t *stream, const pb_field_t *field,
                         void **arg) {
-    UInt8Array &buffer = *((buffer_with_len*)(*arg));
+    UInt8Array &buffer = *((UInt8Array*)(*arg));
     size_t len = stream->bytes_left;
 
-    if (len > sizeof(buffer.data) - 1 ||
-        !pb_read(stream, &buffer.data[0], len)) {
+    if (len > buffer.length - 1 || !pb_read(stream, &buffer.data[0], len)) {
       buffer.length = 0;
       return false;
     }
