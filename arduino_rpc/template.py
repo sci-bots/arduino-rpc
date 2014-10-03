@@ -183,16 +183,17 @@ public:
          * [1]: http://gammon.com.au/i2c-summary */
 
         {
-        int32_t &result = response.forward_i2c_request.result;
+        // int32_t &result = response.forward_i2c_request.result;
 
-        result = i2c_query(request.forward_i2c_request.address,
-                           array_.uint8_t_.data, buffer,
-                           array_.uint8_t_.length);
+        UInt8Array result = obj_.i2c_query_(request.forward_i2c_request
+                                            .address, array_.uint8_t_);
+        response.forward_i2c_request.result = result.length;
+        memcpy(buffer, result.data, result.length);
 
         /* Return directly from here, since the I2C response is already
          * encoded and we wrote the encoded response directly to the
          * buffer. */
-        return result;
+        return result.length;
         }
 #endif  // #ifndef DISABLE_I2C
     {%- for camel_name, underscore_name, return_type, args in commands %}

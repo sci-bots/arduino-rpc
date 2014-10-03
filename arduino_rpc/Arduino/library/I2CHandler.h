@@ -15,6 +15,16 @@ struct I2CHandlerClass {
     i2c_packet_.reset_buffer(buffer_size, &i2c_packet_buffer_[0]);
     processing_i2c_request_ = false;
     i2c_response_size_sent_ = false;
+#ifdef __AVR_ATmega2560__
+    /* Join I2C bus as master. */
+    Wire.begin();
+#else
+    /* Join I2C bus as slave. */
+    Wire.onReceive(&I2CHandlerClass::i2c_receive_event);
+    Wire.onRequest(&I2CHandlerClass::i2c_request_event);
+#endif  // #ifdef __AVR_ATmega328__
+    // Set i2c clock-rate to 400kHz.
+    TWBR = 12;
   }
 
   static void i2c_receive_event(int byte_count) {
