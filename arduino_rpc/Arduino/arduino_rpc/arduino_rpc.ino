@@ -10,8 +10,8 @@
 #include "packet_handler.h"
 
 
-#define PACKET_SIZE   64
-#define COMMAND_ARRAY_BUFFER_SIZE   56
+#define PACKET_SIZE   40
+#define COMMAND_ARRAY_BUFFER_SIZE   40
 /* To save RAM, the serial-port interface may be disabled by defining
  * `DISABLE_SERIAL`. */
 #ifndef DISABLE_SERIAL
