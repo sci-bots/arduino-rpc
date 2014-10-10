@@ -1,0 +1,43 @@
+#ifndef ___RPC_BUFFER__H___
+#define ___RPC_BUFFER__H___
+
+#include <stdint.h>
+
+{% if DISABLE_SERIAL %}
+#define DISABLE_SERIAL
+{%- endif %}
+
+{% for board, info in board_settings.items() %}
+{% if loop.first -%}#ifdef {{ info.code }}
+{% elif loop.last -%}#else
+{% else -%}#elif {{ info.code }}{%- endif %}
+
+/* ## {{ board }} settings ## */
+#ifndef I2C_PACKET_SIZE
+#define I2C_PACKET_SIZE   {{ info.settings.I2C_PACKET_SIZE }}
+#endif  // #ifndef I2C_PACKET_SIZE
+
+#ifndef PACKET_SIZE
+#define PACKET_SIZE   {{ info.settings.PACKET_SIZE }}
+#endif  // #ifndef PACKET_SIZE
+
+#ifndef COMMAND_ARRAY_BUFFER_SIZE
+#define COMMAND_ARRAY_BUFFER_SIZE   {{ info.settings.COMMAND_ARRAY_BUFFER_SIZE }}
+#endif  // #ifndef COMMAND_ARRAY_BUFFER_SIZE
+
+{% endfor %}
+#endif
+
+
+/* To save RAM, the serial-port interface may be disabled by defining
+ * `DISABLE_SERIAL`. */
+#ifndef DISABLE_SERIAL
+extern uint8_t packet_buffer[PACKET_SIZE];
+#endif  // #ifndef DISABLE_SERIAL
+
+/*  - Allocate buffer for command-processor to extract/write array data. */
+extern uint8_t command_array_buffer[COMMAND_ARRAY_BUFFER_SIZE];
+
+extern uint8_t i2c_packet_buffer[I2C_PACKET_SIZE];
+
+#endif  // #ifndef ___RPC_BUFFER__H___

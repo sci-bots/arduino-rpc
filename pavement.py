@@ -14,6 +14,8 @@ try:
                                    _generate_pb_python_module,
                                    generate_protobuf_definitions as
                                    _generate_protobuf_definitions,
+                                   generate_rpc_buffer_header as
+                                   _generate_rpc_buffer_header,
                                    generate_command_processor_header as
                                    _generate_command_processor_header)
 except ImportError:
@@ -25,11 +27,12 @@ except ImportError:
 arduino_rpc_files = find_package_data(package='arduino_rpc',
                                       where='arduino_rpc',
                                       only_in_packages=False)
-pprint(arduino_rpc_files)
+#pprint(arduino_rpc_files)
 
 PROTO_PREFIX = 'commands'
 
-DEFAULT_ARDUINO_BOARDS = ['uno', 'mega2560']
+#DEFAULT_ARDUINO_BOARDS = ['uno', 'mega2560']
+DEFAULT_ARDUINO_BOARDS = ['uno']
 
 setup(name='wheeler.arduino_rpc',
       version=version.getVersion(),
@@ -61,6 +64,13 @@ def generate_command_processor_header():
 
 
 @task
+def generate_rpc_buffer_header():
+    from arduino_rpc import get_sketch_directory
+
+    _generate_rpc_buffer_header(get_sketch_directory())
+
+
+@task
 # Generate protocol buffer request and response definitions, implementing an
 # RPC API using the union message pattern suggested in the [`nanopb`][1]
 # examples.
@@ -87,7 +97,7 @@ def generate_pb_python_module():
 
 @task
 @needs('generate_nanopb_code', 'generate_pb_python_module',
-       'generate_command_processor_header')
+       'generate_rpc_buffer_header', 'generate_command_processor_header')
 @cmdopts([('sconsflags=', 'f', 'Flags to pass to SCons.'),
           ('boards=', 'b', 'Comma-separated list of board names to compile '
            'for (e.g., `uno`).')])

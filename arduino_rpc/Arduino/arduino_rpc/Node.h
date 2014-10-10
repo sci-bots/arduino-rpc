@@ -7,6 +7,7 @@
 #include "Memory.h"
 #include "Array.h"
 #include "custom_pb.h"
+#include "RPCBuffer.h"
 #define BROADCAST_ADDRESS 0x00
 
 
