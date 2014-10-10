@@ -10,6 +10,7 @@ COMMAND_PROCESSOR_TEMPLATE = r'''
 #include "UnionMessage.h"
 #include "Array.h"
 #include "ArraySerialization.h"
+#include "remote_i2c_command.h"
 #include "{{ pb_header }}"
 
 
@@ -180,82 +181,20 @@ public:
          *  - There is a limit of 32 bytes that can be returned.
          *
          * [1]: http://gammon.com.au/i2c-summary */
-        Wire.beginTransmission((uint8_t)request.forward_i2c_request.address);
-        Wire.write(array_.uint8_t_.data, array_.uint8_t_.length);
-        response.forward_i2c_request.result = Wire.endTransmission();
-        if (response.forward_i2c_request.result != 0) {
-          /* Transmission failed.  Perhaps slave was not ready or not
-           * connected. */
-          response.forward_i2c_request.result = -1;
-          break;
-        }
 
-        status = false;
-        /* Request response size. */
-        for (int i = 0; i < 21; i++) {
-          buffer_size = Wire.requestFrom((uint8_t)request
-                                         .forward_i2c_request.address,
-                                         (uint8_t)1);
-          if (buffer_size != 1) {
-            /* Unexpected number of bytes. */
-            response.forward_i2c_request.result = -2;
-            status = false;
-            break;
-          }
+        {
+        // int32_t &result = response.forward_i2c_request.result;
 
-          i2c_count = Wire.read();
+        UInt8Array result = obj_.i2c_query_(request.forward_i2c_request
+                                            .address, array_.uint8_t_);
+        response.forward_i2c_request.result = result.length;
+        memcpy(buffer, result.data, result.length);
 
-          if (i2c_count == 0xFF) {
-            /* The target is reporting that the request has not yet been
-             * processed.  Try again... */
-            if (i < 5) {
-              /* Delay 1ms for the first 3 attempts, to allow fast requests to
-               * return quickly. */
-              delay(1);
-            } else if (i < 10) {
-              /* Delay 10ms for the first next 7 attempts. */
-              delay(10);
-            } else {
-              /* For the last 20 attempts, double the delay each attempt, until
-               * we reach 10240ms _(roughly 10 seconds)_. */
-              delay(10 << (i - 10));
-            }
-          } else if (i2c_count > 32) {
-            /* The buffer size is invalid. */
-            response.forward_i2c_request.result = i2c_count;
-            status = false;
-            break;
-          } else {
-            /* The `i2c_count` should be valid. */
-            request_size = i2c_count;
-            response.forward_i2c_request.result = i2c_count;
-            status = true;
-            break;
-          }
-        }
-        if (!status) {
-          /* An error was encountered so break. */
-          break;
-        }
-
-        /* Request actual response. */
-        buffer_size = Wire.requestFrom((uint8_t)request
-                                       .forward_i2c_request.address,
-                                       (uint8_t)request_size);
-        if (buffer_size != request_size) {
-          /* Unexpected response size. */
-          response.forward_i2c_request.result = request_size;
-          break;
-        }
-        // Slave may send less than requested
-        for (int i = 0; i < request_size; i++) {
-          // receive a byte as character
-          buffer[i] = Wire.read();
-        }
         /* Return directly from here, since the I2C response is already
          * encoded and we wrote the encoded response directly to the
          * buffer. */
-        return request_size;
+        return result.length;
+        }
 #endif  // #ifndef DISABLE_I2C
     {%- for camel_name, underscore_name, return_type, args in commands %}
       case CommandType_{{ underscore_name|upper }}:

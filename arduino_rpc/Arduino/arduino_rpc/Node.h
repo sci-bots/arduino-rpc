@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <EEPROM.h>
+#include <remote_i2c_command.h>
 #include "Memory.h"
 #include "Array.h"
 #include "custom_pb.h"
@@ -18,16 +19,18 @@ class Node {
 public:
   static const uint16_t EEPROM__I2C_ADDRESS = 0x00;
   uint8_t i2c_address_;
-  uint8_t output_buffer[10];
+  uint8_t output_buffer[20];
+  i2c_query i2c_query_;
 
   Node() {
+    UInt8Array i2c_array = {sizeof(output_buffer), output_buffer};
+    i2c_query_ = i2c_query(i2c_array);
     i2c_address_ = EEPROM.read(EEPROM__I2C_ADDRESS);
     Wire.begin(i2c_address_);
   }
-  uint32_t ram_free() { return free_memory(); }
 
+  uint32_t ram_free() { return free_memory(); }
   void pin_mode(uint8_t pin, uint8_t mode) { return pinMode(pin, mode); }
-  void delay_ms(uint32_t milliseconds) const { delay(milliseconds); }
   bool digital_read(uint8_t pin) const { return digitalRead(pin); }
   void digital_write(uint8_t pin, uint8_t value) { digitalWrite(pin, value); }
   uint16_t analog_read(uint8_t pin) const { return analogRead(pin); }
@@ -42,22 +45,7 @@ public:
     return address;
   }
 
-  Int32Array ret_array_demo(Int32Array array) {
-    if (array.length > 3) {
-      array.data = array.data + array.length - 3;
-      array.length = 3;
-    }
-    return array;
-  }
-
-  UInt16Array reverse_array_demo(UInt16Array array) {
-    for(int i = 0; i < static_cast<int>(array.length / 2); i++) {
-      uint16_t temp = array.data[i];
-      array.data[i] = array.data[array.length - 1 - i];
-      array.data[array.length - 1 - i] = temp;
-    }
-    return array;
-  }
+  UInt32Array echo_array(UInt32Array array) { return array; }
 
   UInt8Array str_demo() {
     /* # `str_demo` #
@@ -81,6 +69,10 @@ public:
     result.length = 5;
     return result;
   }
+
+  UInt8Array str_echo(UInt8Array msg) { return msg; }
+
+  uint32_t get_millis() { return millis(); }
 
   UInt8Array pin_state(uint8_t const pin_id) {
     /* # `pin_state` #
