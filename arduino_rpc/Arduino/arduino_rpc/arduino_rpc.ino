@@ -10,6 +10,7 @@
 #include "packet_handler.h"
 
 
+#define I2C_PACKET_SIZE   32
 #define PACKET_SIZE   40
 #define COMMAND_ARRAY_BUFFER_SIZE   40
 /* To save RAM, the serial-port interface may be disabled by defining
@@ -23,7 +24,7 @@ uint8_t command_array_buffer[COMMAND_ARRAY_BUFFER_SIZE];
 UInt8Array command_array = {COMMAND_ARRAY_BUFFER_SIZE,
                             &command_array_buffer[0]};
 
-uint8_t i2c_packet_buffer[PACKET_SIZE];
+uint8_t i2c_packet_buffer[I2C_PACKET_SIZE];
 uint8_t processing_i2c_request = false;
 uint8_t i2c_response_size_sent = false;
 FixedPacket i2c_packet;

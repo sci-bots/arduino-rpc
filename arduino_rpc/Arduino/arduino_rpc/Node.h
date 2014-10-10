@@ -45,22 +45,7 @@ public:
     return address;
   }
 
-  Int32Array ret_array_demo(Int32Array array) {
-    if (array.length > 3) {
-      array.data = array.data + array.length - 3;
-      array.length = 3;
-    }
-    return array;
-  }
-
-  UInt16Array reverse_array_demo(UInt16Array array) {
-    for(int i = 0; i < static_cast<int>(array.length / 2); i++) {
-      uint16_t temp = array.data[i];
-      array.data[i] = array.data[array.length - 1 - i];
-      array.data[array.length - 1 - i] = temp;
-    }
-    return array;
-  }
+  UInt32Array echo_array(UInt32Array array) { return array; }
 
   UInt8Array str_demo() {
     /* # `str_demo` #
