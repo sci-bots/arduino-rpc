@@ -32,10 +32,8 @@ class CommandProcessor {
    * must contain response values. */
 protected:
   Obj &obj_;
-#ifndef DISABLE_I2C
-  buffer_with_len string_buffer_;
-#endif  // #ifndef DISABLE_I2C
-  uint32_t array_buffer_[10];
+  static const size_t DEFAULT_ARRAY_BUFFER_SIZE = 48;
+  UInt8Array array_buffer_;
   union {
     Int8Array int8_t_;
     Int16Array int16_t_;
@@ -55,7 +53,15 @@ protected:
     FloatArray float_;
   } return_array_;
 public:
-  CommandProcessor(Obj &obj) : obj_(obj) {}
+  CommandProcessor(Obj &obj) : obj_(obj) {
+    /*  - No buffer was provided so allocate default buffer of 48 bytes. */
+    array_buffer_.data = reinterpret_cast<uint8_t *>(
+      malloc(DEFAULT_ARRAY_BUFFER_SIZE));
+    array_buffer_.length = DEFAULT_ARRAY_BUFFER_SIZE;
+  }
+
+  CommandProcessor(Obj &obj, UInt8Array array_buffer)
+    : obj_(obj), array_buffer_(array_buffer) {}
 
   int process_command(uint16_t request_size, uint16_t buffer_size,
                       uint8_t *buffer) {
@@ -102,8 +108,10 @@ public:
     switch (request_type) {
 #ifndef DISABLE_I2C
       case CommandType_FORWARD_I2C_REQUEST:
+        array_.uint8_t_.length = array_buffer_.length;
+        array_.uint8_t_.data = array_buffer_.data;
         request.forward_i2c_request.request.funcs.decode = &read_string;
-        request.forward_i2c_request.request.arg = &string_buffer_;
+        request.forward_i2c_request.request.arg = &array_.uint8_t_;
         fields_type = (pb_field_t *)ForwardI2cRequestRequest_fields;
         break;
 #endif  // #ifndef DISABLE_I2C
@@ -113,7 +121,7 @@ public:
     {%- if type_info.1 == 'array' %}
         /* Array: {{ name }}, {{ type_info.0 }}, {{ type_info.1 }}, {{ type_info.2 }} */
         array_.{{ type_info.0 }}_.length = 0;
-        array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(&array_buffer_[0]);
+        array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(array_buffer_.data);
         request.{{ underscore_name }}.{{ name }}.funcs.decode = &read_
         {%- if type_info.0 == 'float' -%}float
         {%- else %}{%- if return_type.0 == 'uint8_t' -%}byte
@@ -173,7 +181,7 @@ public:
          *
          * [1]: http://gammon.com.au/i2c-summary */
         Wire.beginTransmission((uint8_t)request.forward_i2c_request.address);
-        Wire.write(string_buffer_.buffer, string_buffer_.length);
+        Wire.write(array_.uint8_t_.data, array_.uint8_t_.length);
         response.forward_i2c_request.result = Wire.endTransmission();
         if (response.forward_i2c_request.result != 0) {
           /* Transmission failed.  Perhaps slave was not ready or not
