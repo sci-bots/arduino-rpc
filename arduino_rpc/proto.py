@@ -1,4 +1,5 @@
 from collections import OrderedDict
+import warnings
 
 import jinja2
 from protobuf_helpers import underscore_to_camelcase, get_protobuf_type
@@ -169,3 +170,27 @@ def generate_command_processor_header(source_dir, output_dir):
     output_file = output_dir.joinpath('NodeCommandProcessor.h')
     with output_file.open('wb') as output:
         output.write(header_str)
+
+
+def generate_rpc_buffer_header(source_dir, output_dir, **kwargs):
+    board_name = kwargs.pop('board_name', None)
+    default_settings = {'I2C_PACKET_SIZE': 32, 'PACKET_SIZE': 40,
+                        'COMMAND_ARRAY_BUFFER_SIZE': 40,
+                        'allocate_command_array_buffer': True}
+
+    board_settings = {'uno': default_settings,
+                      'mega2560': dict(default_settings, PACKET_SIZE=256,
+                                       COMMAND_ARRAY_BUFFER_SIZE=256)}
+
+    kwargs.update(board_settings.get(board_name, default_settings))
+
+    template_file = source_dir.joinpath('RPCBuffer.ht')
+    output_file = output_dir.joinpath('RPCBuffer.h')
+    if output_file.isfile():
+        warnings.warn('Skipping generation of buffer configuration since file '
+                      'already exists: `%s`' % output_file)
+    else:
+        with output_file.open('wb') as output:
+            t = jinja2.Template(template_file.bytes())
+            output.write(t.render(**kwargs))
+            print ('Wrote buffer configuration: `%s`' % output_file)
