@@ -8,6 +8,7 @@ from clang_helpers import (open_cpp_source, extract_class_declarations,
 from clang_helpers.clang.cindex import Cursor, TypeKind
 from nanopb_helpers import compile_nanopb, compile_pb
 
+from . import get_sketch_directory
 from .template import COMMAND_PROCESSOR_TEMPLATE, COMMAND_PROTO_DEFINITIONS
 
 
@@ -172,20 +173,25 @@ def generate_command_processor_header(source_dir, output_dir):
         output.write(header_str)
 
 
-def generate_rpc_buffer_header(source_dir, output_dir, **kwargs):
-    board_name = kwargs.pop('board_name', None)
+def generate_rpc_buffer_header(output_dir, **kwargs):
+    source_dir = kwargs.pop('source_dir', get_sketch_directory())
+    template_filename = kwargs.get('template_filename', 'RPCBuffer.ht')
+
     default_settings = {'I2C_PACKET_SIZE': 32, 'PACKET_SIZE': 40,
                         'COMMAND_ARRAY_BUFFER_SIZE': 40,
-                        'allocate_command_array_buffer': True}
+                        'allocate_command_array_buffer': True,
+                        'test': {'I2C_PACKET_SIZE': 124321}}
+    board_settings = OrderedDict([
+        ('uno', {'code': '__AVR_ATmega3280__', 'settings': default_settings}),
+        ('mega2560', {'code': '__AVR_ATmega2560__',
+                      'settings': dict(default_settings, PACKET_SIZE=256,
+                                       COMMAND_ARRAY_BUFFER_SIZE=256)}),
+        ('default', {'settings': default_settings})])
 
-    board_settings = {'uno': default_settings,
-                      'mega2560': dict(default_settings, PACKET_SIZE=256,
-                                       COMMAND_ARRAY_BUFFER_SIZE=256)}
+    kwargs.update({'board_settings': board_settings})
 
-    kwargs.update(board_settings.get(board_name, default_settings))
-
-    template_file = source_dir.joinpath('RPCBuffer.ht')
-    output_file = output_dir.joinpath('RPCBuffer.h')
+    template_file = source_dir.joinpath(template_filename)
+    output_file = output_dir.joinpath(template_file.namebase + '.h')
     if output_file.isfile():
         warnings.warn('Skipping generation of buffer configuration since file '
                       'already exists: `%s`' % output_file)

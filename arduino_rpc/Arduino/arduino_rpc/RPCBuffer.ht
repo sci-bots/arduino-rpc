@@ -7,17 +7,26 @@
 #define DISABLE_SERIAL
 {%- endif %}
 
+{% for board, info in board_settings.items() %}
+{% if loop.first -%}#ifdef {{ info.code }}
+{% elif loop.last -%}#else
+{% else -%}#elif {{ info.code }}{%- endif %}
+
+/* ## {{ board }} settings ## */
 #ifndef I2C_PACKET_SIZE
-#define I2C_PACKET_SIZE   {{ I2C_PACKET_SIZE }}
+#define I2C_PACKET_SIZE   {{ info.settings.I2C_PACKET_SIZE }}
 #endif  // #ifndef I2C_PACKET_SIZE
 
 #ifndef PACKET_SIZE
-#define PACKET_SIZE   {{ PACKET_SIZE }}
+#define PACKET_SIZE   {{ info.settings.PACKET_SIZE }}
 #endif  // #ifndef PACKET_SIZE
 
 #ifndef COMMAND_ARRAY_BUFFER_SIZE
-#define COMMAND_ARRAY_BUFFER_SIZE   {{ COMMAND_ARRAY_BUFFER_SIZE }}
+#define COMMAND_ARRAY_BUFFER_SIZE   {{ info.settings.COMMAND_ARRAY_BUFFER_SIZE }}
 #endif  // #ifndef COMMAND_ARRAY_BUFFER_SIZE
+
+{% endfor %}
+#endif
 
 
 /* To save RAM, the serial-port interface may be disabled by defining

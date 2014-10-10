@@ -67,7 +67,7 @@ def generate_command_processor_header():
 def generate_rpc_buffer_header():
     from arduino_rpc import get_sketch_directory
 
-    _generate_rpc_buffer_header(get_sketch_directory(), get_sketch_directory())
+    _generate_rpc_buffer_header(get_sketch_directory())
 
 
 @task
