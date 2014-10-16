@@ -124,12 +124,18 @@ public:
         array_.{{ type_info.0 }}_.length = 0;
         array_.{{ type_info.0 }}_.data = reinterpret_cast<{{ type_info.0 }} *>(array_buffer_.data);
         request.{{ underscore_name }}.{{ name }}.funcs.decode = &read_
-        {%- if type_info.0 == 'float' -%}float
-        {%- else %}{%- if return_type.0 == 'uint8_t' -%}byte
-        {%- else %}{%- if type_info.0.startswith('u') %}uint
-        {%- else %}int
-        {%- endif -%}{%- endif -%}{%- endif -%}
-        _array{%- if return_type.0 != 'uint8_t' -%}<{{ type_info.2 }}>{%- endif %};
+        {%- if type_info.0 == 'uint8_t' -%}
+            string
+        {%- else -%}
+            {%- if type_info.0 == 'float' -%}
+                float
+            {%- else -%}{%- if type_info.0.startswith('u') -%}
+                uint
+            {%- else -%}
+                int
+            {%- endif -%}{%- endif -%}
+            _array<{{ type_info.2 }}>
+        {%- endif %};
         request.{{ underscore_name }}.{{ name }}.arg = &array_.{{ type_info.0 }}_;
     {% endif -%}
     {%- endfor %}

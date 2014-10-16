@@ -23,11 +23,18 @@ def test_arduino_rpc():
                                     .astype(int).tolist())
     yield _test_echo_array, board, (np.linspace(0, max_int32, num=5)
                                     .astype(int).tolist())[::-1]
-    yield _test_str_echo, board, 'hello'
+
+    # Test echoing a string of bytes that are less than 128 in binary.
+    yield _test_str_echo, board, 'hello, world!'
+
+    # Test echoing a string of bytes that are 128 or greater.
+    # See ticket [#9][#9].
+    #
+    # [#9]: https://github.com/wheeler-microfluidics/arduino_rpc/issues/9
+    yield _test_str_echo, board, '\x80\x81\x82\x83\x84\x85'
 
 
 def _test_str_echo(board, value):
-    # TODO: This test currently fails.
     eq_(board.str_echo(msg=value), value)
 
 
