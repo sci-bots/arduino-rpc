@@ -51,7 +51,7 @@ Much of the effort of coding our own Arduino projects was dedicated:
 
 There are a few problems with this:
 
- - Lot’s of duplicated effort, redefining protocols for every project, or at
+ - Lots of duplicated effort, redefining protocols for every project, or at
    best, copying and pasting and modifying to suit.
  - Brittle code, since any change on the device protocol API required the host
    code to be updated separately to match.
@@ -156,9 +156,10 @@ be sufficiently fast.
 
 Currently, each method added to the `Node` class adds about 40 bytes of memory
 overhead.  This still allows quite a few methods, even on an Arduino Uno, but
-we have run up against the memory limit.  However, there are several ways to
-address this issue with the current implementation, and we have [some ideas][2]
-of how to address this during code generation, as well.
+we have run up against the memory limit on some of our projects.  However,
+there are several ways to address this issue with the current implementation,
+and we have [some ideas][2] of how to address this during code generation, as
+well.
 
 For now, the easiest option is likely to implement a single method that accepts
 two arguments:

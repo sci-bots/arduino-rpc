@@ -108,10 +108,10 @@ static bool write_float_array(pb_ostream_t *stream, const pb_field_t *field,
 }
 
 
-template <typename Int>
+template <typename ArrayType>
 static bool read_uint_array(pb_istream_t *stream, const pb_field_t *field,
                            void **arg) {
-    Int &array = *((Int*)(*arg));
+    ArrayType &array = *((ArrayType*)(*arg));
     uint64_t value;
 
     if (!pb_decode_varint(stream, &value)) {
