@@ -2,6 +2,7 @@
 #define ___REMOTE_I2C_COMMAND__H___
 
 #include <Array.h>
+#include <UnionMessage.h>
 
 
 struct i2c_query {
@@ -17,25 +18,12 @@ struct i2c_query {
   int8_t ERROR_CODE_;
   UInt8Array response_;
 
-  UInt8Array cached_message_;
-  uint8_t cached_address_;
-
-  i2c_query() : ERROR_CODE_(CREATED), cached_address_(0) {}
+  i2c_query() : ERROR_CODE_(CREATED) {}
 
   i2c_query(UInt8Array response)
-      : ERROR_CODE_(CREATED), response_(response), cached_address_(0) {
-    cached_message_ = {0, NULL};
-  }
+      : ERROR_CODE_(CREATED), response_(response) {}
 
   uint16_t size() const { return response_.length; }
-
-  UInt8Array repeat() {
-    if (cached_address_ == 0) {
-      return cached_message_;
-    } else {
-      return (*this)(cached_address_, cached_message_);
-    }
-  }
 
   UInt8Array operator() (uint8_t address, UInt8Array msg) {
     UInt8Array response = response_;
@@ -120,10 +108,51 @@ struct i2c_query {
       ERROR_CODE_ = RESPONSE_EMPTY_ERROR;
     } else {
       ERROR_CODE_ = QUERY_COMPLETE;
-      cached_message_ = msg;
-      cached_address_ = address;
     }
     return response;
+  }
+
+  template <typename MsgUnion>
+  int request(uint8_t address, MsgUnion message,
+              const pb_field_t command_request_fields[],
+              const pb_field_t request_fields[],
+              const pb_field_t command_response_fields[],
+              const pb_field_t response_fields[]) {
+    /* # Encode a protocol buffers message using nano pb #
+     *
+     * To send requests directly from one device to another, we need to be able
+     * to encode the requests on-device.  We do this using nano protocol
+     * buffers.  In this method, we aim to test this encoding functionality by
+     * conducting the following steps:
+     *
+     *  1. Encode protocol buffer message using nanopb.
+     *  2. Write encoded message to `command_buffer`.
+     *  3. Return `UInt8Array` referencing the contents of the encoded message. */
+    int8_t return_code;
+
+    UInt8Array request_buffer = response_;
+    pb_ostream_t ostream = pb_ostream_from_buffer(request_buffer.data,
+                                                  request_buffer.length);
+
+    /* Serialize the response and write the encoded response to the buffer. */
+    bool status = encode_unionmessage(&ostream, command_request_fields,
+                                      request_fields, &message.request);
+    request_buffer.length = ostream.bytes_written;
+
+    UInt8Array result = (*this)(address, request_buffer);
+
+    pb_istream_t istream = pb_istream_from_buffer(result.data, result.length);
+
+    return_code = decode_unionmessage_tag(&istream, command_response_fields);
+    if (!return_code) {
+      return -1;
+    }
+    return_code = decode_unionmessage_contents(&istream, response_fields,
+                                               &message.response);
+    if (!return_code) {
+      return -2;
+    }
+    return 0;
   }
 };
 

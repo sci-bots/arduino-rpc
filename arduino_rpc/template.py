@@ -21,6 +21,15 @@ COMMAND_PROCESSOR_TEMPLATE = r'''
 {%- endif %}
 
 
+{% for camel_name, underscore_name, return_type, args in commands %}
+union {{ camel_name }}Message {
+    {{ camel_name }}Request request;
+    {{ camel_name }}Response response;
+};
+
+{% endfor %}
+
+
 template <typename Obj>
 class CommandProcessor {
   /* # `CommandProcessor` #
