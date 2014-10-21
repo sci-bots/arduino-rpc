@@ -27,6 +27,21 @@ union {{ camel_name }}Message {
     {{ camel_name }}Response response;
 };
 
+struct {{ camel_name }}Query {
+  {{ camel_name }}Message msg;
+  const pb_field_t * cmd_request_fields;
+  const pb_field_t * cmd_response_fields;
+  const pb_field_t * request_fields;
+  const pb_field_t * response_fields;
+
+  {{ camel_name }}Query()
+    : cmd_request_fields(CommandRequest_fields),
+      cmd_response_fields(CommandResponse_fields),
+      request_fields({{ camel_name }}Request_fields),
+      response_fields({{ camel_name }}Response_fields) { }
+};
+
+
 {% endfor %}
 
 

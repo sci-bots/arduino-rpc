@@ -112,8 +112,15 @@ struct i2c_query {
     return response;
   }
 
+  template <typename Query>
+  int request(uint8_t address, Query &query) {
+    return request(address, query.msg, query.cmd_request_fields,
+                   query.request_fields, query.cmd_response_fields,
+                   query.cmd_response_fields);
+  }
+
   template <typename MsgUnion>
-  int request(uint8_t address, MsgUnion message,
+  int request(uint8_t address, MsgUnion &message,
               const pb_field_t command_request_fields[],
               const pb_field_t request_fields[],
               const pb_field_t command_response_fields[],
