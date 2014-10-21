@@ -9,12 +9,15 @@ from clang_helpers.clang.cindex import Cursor, TypeKind
 from nanopb_helpers import compile_nanopb, compile_pb
 
 from . import get_sketch_directory
-from .template import COMMAND_PROCESSOR_TEMPLATE, COMMAND_PROTO_DEFINITIONS
+from .template import (COMMAND_PROCESSOR_TEMPLATE, COMMAND_PROTO_DEFINITIONS,
+                       EXT_COMMAND_PROTO_DEFINITIONS,
+                       EXT_MESSAGE_UNIONS_TEMPLATE)
 
 
 class CodeGenerator(object):
     command_processor_template = COMMAND_PROCESSOR_TEMPLATE
     command_proto_definitions = COMMAND_PROTO_DEFINITIONS
+    ext_message_unions_template = EXT_MESSAGE_UNIONS_TEMPLATE
 
     def __init__(self, rpc_header, disable_i2c=False):
         self.rpc_header = rpc_header
@@ -72,7 +75,8 @@ class CodeGenerator(object):
             protobuf_methods[name]['arguments'] = arguments
         return protobuf_methods
 
-    def get_protobuf_definitions(self, disable_i2c=None):
+    def get_protobuf_definitions(self, disable_i2c=None, template=None,
+                                 extra_context=None):
         if disable_i2c is None:
             disable_i2c = self.disable_i2c
         protobuf_methods = self.get_protobuf_methods()
@@ -85,11 +89,15 @@ class CodeGenerator(object):
                          enumerate(protobuf_methods.iteritems())]
         commands = [(underscore_to_camelcase(k), k) + tuple(v.values())
                     for k, v in protobuf_methods.iteritems()]
-
-        t = jinja2.Template(self.command_proto_definitions)
-        return t.render(command_names=command_names,
-                        command_types=command_types, commands=commands,
-                        disable_i2c=disable_i2c)
+        if template is None:
+            template = self.command_proto_definitions
+        context = dict(command_names=command_names,
+                       command_types=command_types, commands=commands,
+                       disable_i2c=disable_i2c)
+        if extra_context is not None:
+             context.update(extra_context)
+        t = jinja2.Template(template)
+        return t.render(context)
 
     def get_protobuf_definitions_context(self):
         protobuf_methods = self.get_protobuf_methods()
@@ -136,6 +144,14 @@ class CodeGenerator(object):
         return t.render({'commands': commands, 'pb_header': 'commands_pb.h',
                          'disable_i2c': disable_i2c})
 
+    def get_ext_message_unions_header(self, project_prefix):
+        commands = self.get_command_processor_header_commands()
+        t = jinja2.Template(self.ext_message_unions_template)
+        return t.render({'commands': commands,
+                         'project_prefix': project_prefix,
+                         'camel_project_prefix':
+                         underscore_to_camelcase(project_prefix)})
+
 
 def generate_nanopb_code(source_dir, destination_dir):
     for proto_path in source_dir.files('*.proto'):
@@ -157,12 +173,35 @@ def generate_pb_python_module(source_dir, destination_dir):
 
 
 def generate_protobuf_definitions(source_dir, output_dir,
-                                  protobuf_prefix='commands'):
+                                  protobuf_prefix='commands', template=None,
+                                  extra_context=None):
     code_generator = CodeGenerator(source_dir.joinpath('Node.h'))
-    definition_str = code_generator.get_protobuf_definitions()
+    definition_str = code_generator.get_protobuf_definitions(template=template,
+                                                             extra_context=
+                                                             extra_context)
     output_file = output_dir.joinpath('%s.proto' % protobuf_prefix)
     with output_file.open('wb') as output:
         output.write(definition_str)
+
+
+def generate_ext_protobuf_definitions(project_prefix, source_dir, output_dir,
+                                      protobuf_prefix='ext_commands'):
+    generate_protobuf_definitions(source_dir, output_dir,
+                                  project_prefix + '_commands',
+                                  template=EXT_COMMAND_PROTO_DEFINITIONS,
+                                  extra_context={'camel_project_prefix':
+                                                 underscore_to_camelcase(
+                                                     project_prefix),
+                                                 'project_prefix':
+                                                 project_prefix})
+
+
+def generate_ext_message_unions_header(project_prefix, source_dir,
+                                       output_path):
+    code_generator = CodeGenerator(source_dir.joinpath('Node.h'))
+    header_str = code_generator.get_ext_message_unions_header(project_prefix)
+    with output_path.open('wb') as output:
+        output.write(header_str)
 
 
 def generate_command_processor_header(source_dir, output_dir):

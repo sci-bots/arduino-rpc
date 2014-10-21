@@ -345,3 +345,93 @@ message CommandResponse {
     optional {{ camel_name }}Response {{ underscore_name }} = {{ key }};
 {%- endfor %}
 }'''
+
+
+EXT_COMMAND_PROTO_DEFINITIONS = r'''
+enum {{ camel_project_prefix }}_CommandType {
+{%- if not disable_i2c %}
+    FORWARD_I2C_REQUEST = 1;
+{%- endif %}
+{%- for underscore_name, key in command_names %}
+    {{ underscore_name|upper }} = {{ key }};
+{%- endfor %}
+}
+
+{%- if not disable_i2c %}
+message {{ camel_project_prefix }}_ForwardI2cRequestRequest {
+required uint32 address = 1;
+required bytes request = 2;
+}
+{%- endif %}
+
+{%- for camel_name, underscore_name, return_type, args in commands -%}
+message {{ camel_project_prefix }}_{{ camel_name }}Request {
+{%- for arg in args -%}
+{%- if arg.1|length == 2 %}
+    {{ arg.1.1 }} {{ arg.1.0 }} {{ arg.0 }} = {{ loop.index }}
+    {%- if arg.1.0 != 'bytes' %} [packed=true] {% endif %};
+{%- else %}
+    required {{ arg.1 }} {{ arg.0 }} = {{ loop.index }};
+{%- endif %}
+{%- endfor %}
+}
+{%- endfor %}
+
+{%- if not disable_i2c %}
+message {{ camel_project_prefix }}_ForwardI2cRequestResponse { required sint32 result = 1; }
+{%- endif %}
+
+{%- for camel_name, underscore_name, return_type, args in commands -%}
+message {{ camel_project_prefix }}_{{ camel_name }}Response {
+{%- if return_type %}
+{%- if return_type|length == 2 %}
+    {{ return_type.1 }} {{ return_type.0 }} result = 1
+    {%- if return_type.0 != 'bytes' %} [packed=true] {% endif %};
+{%- else %}
+    required {{ return_type }} result = 1;
+{%- endif %}
+{% endif -%}
+}
+{%- endfor %}
+
+message {{ camel_project_prefix }}_CommandRequest {
+{%- if not disable_i2c %}
+    optional {{ camel_project_prefix }}_ForwardI2cRequestRequest forward_i2c_request = 1;
+{%- endif %}
+{%- for camel_name, underscore_name, key in command_types %}
+    optional {{ camel_project_prefix }}_{{ camel_name }}Request {{ underscore_name }} = {{ key }};
+{%- endfor %}
+}
+
+message {{ camel_project_prefix }}_CommandResponse {
+{%- if not disable_i2c %}
+    optional {{ camel_project_prefix }}_ForwardI2cRequestResponse forward_i2c_request = 1;
+{%- endif %}
+{%- for camel_name, underscore_name, key in command_types %}
+    optional {{ camel_project_prefix }}_{{ camel_name }}Response {{ underscore_name }} = {{ key }};
+{%- endfor %}
+}
+'''
+
+
+EXT_MESSAGE_UNIONS_TEMPLATE = r'''
+#ifndef ___{{ camel_project_prefix.upper() }}_MESSAGE_UNIONS__H___
+#define ___{{ camel_project_prefix.upper() }}_MESSAGE_UNIONS__H___
+
+#include "{{ project_prefix }}_commands_pb.h"
+
+
+namespace {{ project_prefix }} {
+
+{% for camel_name, underscore_name, return_type, args in commands %}
+union {{ camel_name }}Message {
+    {{ camel_project_prefix }}_{{ camel_name }}Request request;
+    {{ camel_project_prefix }}_{{ camel_name }}Response response;
+};
+
+{% endfor %}
+
+}  // namespace {{ project_prefix }}
+
+#endif
+'''

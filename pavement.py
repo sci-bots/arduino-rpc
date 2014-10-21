@@ -17,7 +17,11 @@ try:
                                    generate_rpc_buffer_header as
                                    _generate_rpc_buffer_header,
                                    generate_command_processor_header as
-                                   _generate_command_processor_header)
+                                   _generate_command_processor_header,
+                                   generate_ext_protobuf_definitions as
+                                   _generate_ext_protobuf_definitions,
+                                   generate_ext_message_unions_header as
+                                   _generate_ext_message_unions_header)
 except ImportError:
     import warnings
 
@@ -30,6 +34,7 @@ arduino_rpc_files = find_package_data(package='arduino_rpc',
 #pprint(arduino_rpc_files)
 
 PROTO_PREFIX = 'commands'
+PROJECT_PREFIX = 'arduino_rpc'
 
 #DEFAULT_ARDUINO_BOARDS = ['uno', 'mega2560']
 DEFAULT_ARDUINO_BOARDS = ['uno']
@@ -71,6 +76,33 @@ def generate_rpc_buffer_header():
 
 
 @task
+def generate_ext_protobuf_definitions():
+    from arduino_rpc import get_sketch_directory, package_path
+
+    protobuf_dir = package_path().joinpath('Arduino', 'library').abspath()
+    protobuf_dir.makedirs_p()
+    _generate_ext_protobuf_definitions(PROJECT_PREFIX, get_sketch_directory(),
+                                       protobuf_dir)
+
+
+@task
+# Generate protocol buffer request and response definitions, implementing an
+# RPC API using the union message pattern suggested in the [`nanopb`][1]
+# examples.
+#
+# [1]: https://code.google.com/p/nanopb/source/browse/examples/using_union_messages/README.txt
+@needs('generate_ext_protobuf_definitions')
+def generate_ext_nanopb_code():
+    from arduino_rpc import get_sketch_directory, package_path
+
+    protobuf_dir = package_path().joinpath('Arduino', 'library').abspath()
+    _generate_nanopb_code(protobuf_dir, protobuf_dir)
+    _generate_ext_message_unions_header(PROJECT_PREFIX, get_sketch_directory(),
+                                        protobuf_dir.joinpath('%s_message.h' %
+                                                              PROJECT_PREFIX))
+
+
+@task
 # Generate protocol buffer request and response definitions, implementing an
 # RPC API using the union message pattern suggested in the [`nanopb`][1]
 # examples.
@@ -97,7 +129,8 @@ def generate_pb_python_module():
 
 @task
 @needs('generate_nanopb_code', 'generate_pb_python_module',
-       'generate_rpc_buffer_header', 'generate_command_processor_header')
+       'generate_rpc_buffer_header', 'generate_command_processor_header',
+       'generate_ext_nanopb_code')
 @cmdopts([('sconsflags=', 'f', 'Flags to pass to SCons.'),
           ('boards=', 'b', 'Comma-separated list of board names to compile '
            'for (e.g., `uno`).')])
