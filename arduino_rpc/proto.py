@@ -156,7 +156,12 @@ class CodeGenerator(object):
 def generate_nanopb_code(source_dir, destination_dir):
     for proto_path in source_dir.files('*.proto'):
         prefix = proto_path.namebase
-        nanopb = compile_nanopb(proto_path)
+        options_path = proto_path.parent.joinpath(proto_path.namebase +
+                                                  '.options')
+        if options_path.isfile():
+            nanopb = compile_nanopb(proto_path, options_path)
+        else:
+            nanopb = compile_nanopb(proto_path)
         header_name = prefix + '_pb.h'
         source_name = prefix + '_pb.c'
         destination_dir.joinpath(header_name).write_bytes(nanopb['header'])
