@@ -368,7 +368,7 @@ def get_signature_info(signature):
 
 
 def get_py_command_constants(df_sig_info, starting_value=0x80):
-    return ('CMD_' + df_sig_info.underscore.str.upper() + ' = ' +
+    return ('_CMD_' + df_sig_info.underscore.str.upper() + ' = ' +
             df_sig_info.index.map(lambda x: hex(starting_value + x)))
 
 
@@ -435,7 +435,7 @@ class ProxyBase(object):
     def __init__(self, serial):
         self._serial = serial
 
-    def send_command(self, packet):
+    def _send_command(self, packet):
         self._serial.write(packet.tostring())
         parser = cPacketParser()
         result = None
@@ -461,11 +461,21 @@ class Proxy(ProxyBase):
 
 {% for i, sig_info_i in df_py_sig_info.iterrows() %}
 def {{ sig_info_i.underscore }}(self{% if sig_info_i.arg_count >0 %}, {% endif %}{{ ', '.join(sig_info_i.arg_info.name) }}):
-    command = np.dtype('uint8').type(self.CMD_{{ sig_info_i.underscore.upper() }})
+    command = np.dtype('uint8').type(self._CMD_{{ sig_info_i.underscore.upper() }})
 {{ sig_info_i.payload_template }}
     payload_data = command.tostring() + payload_data
     packet = cPacket(data=payload_data, type_=PACKET_TYPES.DATA)
-    return self.send_command(packet)
+    response = self._send_command(packet)
+    {% if sig_info_i.return_type is not none %}
+    result = np.fromstring(response.data(), dtype='{{ sig_info_i.return_atom_type  }}')
+    {% if sig_info_i.return_dims > 0 %}
+    # Return type is an array, so return entire array.
+    return result
+    {% else %}
+    # Return type is a scalar, so return first entry in array.
+    return result[0]
+    {% endif %}
+    {% endif %}
 {% endfor %}
 '''.strip())
 
