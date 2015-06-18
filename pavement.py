@@ -4,8 +4,8 @@ import sys
 from paver.easy import task, needs, path, sh, cmdopts, options
 from paver.setuputils import setup, find_package_data
 
+sys.path.insert(0, '.')
 import version
-sys.path.append(path('.').abspath())
 try:
     from arduino_rpc.proto import (CodeGenerator,
                                    generate_nanopb_code as
@@ -38,7 +38,6 @@ PROJECT_PREFIX = 'arduino_rpc'
 
 #DEFAULT_ARDUINO_BOARDS = ['uno', 'mega2560']
 DEFAULT_ARDUINO_BOARDS = ['uno']
-
 setup(name='wheeler.arduino_rpc',
       version=version.getVersion(),
       description='Arduino RPC node packaged as Python package.',
