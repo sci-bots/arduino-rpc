@@ -6,20 +6,17 @@
 #include "ArduinoRPC.h"
 #include "Array.h"
 #include "Node.h"
-#include "NodeCommandProcessor.h"
+#include "TestCommandProcessor.h"
 #include "packet_handler.h"
 #include "RPCBuffer.h"
 
-
-UInt8Array command_array = {COMMAND_ARRAY_BUFFER_SIZE,
-                            &command_array_buffer[0]};
 
 uint8_t processing_i2c_request = false;
 uint8_t i2c_response_size_sent = false;
 FixedPacket i2c_packet;
 
 Node node;
-CommandProcessor<Node> command_processor(node, command_array);
+CommandProcessor<Node> command_processor(node);
 
 #ifndef DISABLE_SERIAL
 typedef CommandPacketHandler<Stream, CommandProcessor<Node> > Handler;
@@ -53,7 +50,7 @@ void setup() {
   packet.reset_buffer(PACKET_SIZE, &packet_buffer[0]);
   parser.reset(&packet);
 #endif  // #ifndef DISABLE_SERIAL
-  i2c_packet.reset_buffer(PACKET_SIZE, &i2c_packet_buffer[0]);
+  i2c_packet.reset_buffer(I2C_PACKET_SIZE, &i2c_packet_buffer[0]);
 }
 
 
