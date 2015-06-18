@@ -30,9 +30,19 @@ public:
     Wire.begin(i2c_address_);
   }
 
+  uint32_t microseconds() { return micros(); }
+  uint32_t milliseconds() { return millis(); }
+  void delay_us(uint16_t us) { if (us > 0) { delayMicroseconds(us); } }
+  void delay_ms(uint16_t ms) { if (ms > 0) { delay(ms); } }
+  uint32_t max_payload_size() {
+    return (PACKET_SIZE
+            - 3 * sizeof(uint8_t)  // Frame boundary
+            - sizeof(uint16_t)  // UUID
+            - sizeof(uint16_t));  // Payload length
+  }
   uint32_t ram_free() { return free_memory(); }
   void pin_mode(uint8_t pin, uint8_t mode) { return pinMode(pin, mode); }
-  bool digital_read(uint8_t pin) const { return digitalRead(pin); }
+  uint8_t digital_read(uint8_t pin) const { return digitalRead(pin); }
   void digital_write(uint8_t pin, uint8_t value) { digitalWrite(pin, value); }
   uint16_t analog_read(uint8_t pin) const { return analogRead(pin); }
   void analog_write(uint8_t pin, uint8_t value) { return analogWrite(pin, value); }
@@ -46,6 +56,7 @@ public:
     return address;
   }
 
+  uint16_t array_length(UInt8Array array) { return array.length; }
   UInt32Array echo_array(UInt32Array array) { return array; }
 
   UInt8Array str_demo() {
