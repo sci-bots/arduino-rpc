@@ -13,8 +13,8 @@ import jinja2
 
 
 header_template = jinja2.Template('''
-#ifndef ___{{ header_name|upper }}___
-#define ___{{ header_name|upper }}___
+#ifndef ___{{ class_name_underscore|upper }}___
+#define ___{{ class_name_underscore|upper }}___
 
 #include "Array.h"
 #include "remote_i2c_command.h"
@@ -26,8 +26,8 @@ header_template = jinja2.Template('''
 {% endfor %}
 
 template <typename Obj>
-class CommandProcessor {
-  /* # `CommandProcessor` #
+class {{ class_name }} {
+  /* # `{{ class_name }}` #
    *
    * Each call to this functor processes a single command.
    *
@@ -38,7 +38,7 @@ class CommandProcessor {
 protected:
   Obj &obj_;
 public:
-  CommandProcessor(Obj &obj) : obj_(obj) {}
+  {{ class_name }}(Obj &obj) : obj_(obj) {}
 
 {% for command_constant in command_constants %}
   {{ command_constant }}
@@ -73,7 +73,7 @@ public:
   }
 };
 
-#endif  // #ifndef ___{{ header_name|upper }}___
+#endif  // #ifndef ___{{ class_name_underscore|upper }}___
 ''')
 
 
@@ -304,6 +304,17 @@ def get_switch_case_tempate(sig_info):
     return template.render(**context)
 
 
+STD_ARRAY_TYPES = pd.Series(OrderedDict([
+    ('int8_t', 'Int8Array'),
+    ('int16_t', 'Int16Array'),
+    ('int32_t', 'Int32Array'),
+    ('uint8_t', 'UInt8Array'),
+    ('uint16_t', 'UInt16Array'),
+    ('uint32_t', 'UInt32Array'),
+    ('float', 'FloatArray'),
+]))
+
+
 array_types = pd.Series(OrderedDict([
     ('int8', 'Int8Array'),
     ('int16', 'Int16Array'),
@@ -405,12 +416,18 @@ def get_c_sig_info_frame(df_sig_info):
     return df_c_sig_info
 
 
-def write_c_header(df_c_sig_info, header_path, header_name):
+def c_code_template(df_c_sig_info, underscore_class_name):
+    return (header_template
+            .render(class_name=
+                    underscore_to_camelcase(underscore_class_name),
+                    class_name_underscore=underscore_class_name,
+                    command_constants=get_c_command_constants(df_c_sig_info),
+                    df_c_sig_info=df_c_sig_info))
+
+
+def write_c_header(df_c_sig_info, header_path, underscore_class_name):
     with open(header_path, 'wb') as output:
-        output.write(header_template
-                     .render(header_name=header_name,
-                             command_constants=get_c_command_constants(df_c_sig_info),
-                             df_c_sig_info=df_c_sig_info))
+        output.write(c_code_template(df_c_sig_info, underscore_class_name))
 
 
 def get_py_sig_info_frame(df_sig_info):
@@ -428,28 +445,8 @@ def get_py_sig_info_frame(df_sig_info):
 class_head = '''
 import pandas as pd
 import numpy as np
-from nadamq.NadaMq import cPacket, cPacketParser, PACKET_TYPES
-
-
-class ProxyBase(object):
-    def __init__(self, serial):
-        self._serial = serial
-
-    def _send_command(self, packet):
-        self._serial.write(packet.tostring())
-        parser = cPacketParser()
-        result = None
-
-        while True:
-            response = self._serial.read(self._serial.inWaiting())
-            if response == '':
-                continue
-            result = parser.parse(np.fromstring(response, dtype='uint8'))
-            if parser.message_completed:
-                break
-            elif parser.error:
-                raise IOError('Error parsing.')
-        return result
+from nadamq.NadaMq import cPacket, PACKET_TYPES
+from arduino_rpc.proxy import ProxyBase
 '''
 
 template = jinja2.Template('''
