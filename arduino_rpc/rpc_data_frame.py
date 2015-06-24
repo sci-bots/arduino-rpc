@@ -66,8 +66,8 @@ public:
     static const int CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }};
 {%- endfor %}
 
-  int process_command(uint16_t request_size, uint16_t buffer_size,
-                      uint8_t *buffer) {
+  UInt8Array process_command(uint16_t request_size, uint16_t buffer_size,
+                             uint8_t *buffer) {
     /* ## Call operator ##
      *
      * Arguments:
@@ -126,7 +126,15 @@ public:
       default:
         bytes_written = -1;
     }
-    return bytes_written;
+    UInt8Array result;
+    if (bytes_written < 0) {
+        result.length = 0xFFFF;
+        result.data = NULL;
+    } else {
+        result.length = bytes_written;
+        result.data = buffer;
+    }
+    return result;
   }
 };
 

@@ -2,14 +2,17 @@
 #define ___COMMAND_PACKET_HANDLER__H___
 
 
+#include "Array.h"
 #include "PacketWriter.h"
 
 
 /* # `process_packet` # */
 template <typename Packet, typename Processor>
-void process_packet_with_processor(Packet &packet, Processor &processor) {
+UInt8Array process_packet_with_processor(Packet &packet,
+                                         Processor &processor) {
     uint16_t payload_bytes_to_process = packet.payload_length_;
 
+    UInt8Array result;
     if (packet.type() == Packet::packet_type::DATA &&
         payload_bytes_to_process > 0) {
 #if defined (SERIAL_DEBUG) && defined (DISABLE_SERIAL)
@@ -22,17 +25,14 @@ void process_packet_with_processor(Packet &packet, Processor &processor) {
           Serial.println("");
       }
 #endif
-      int result = processor.process_command(packet.payload_length_,
-                                             packet.buffer_size_,
-                                             packet.payload_buffer_);
-      if (result < 0) {
-        /* There was an error encountered while processing the request. */
-        packet.type(Packet::packet_type::NACK);
-        packet.payload_length_ = 0;
-      } else {
-        packet.payload_length_ = result;
-      }
+      result = processor.process_command(packet.payload_length_,
+                                         packet.buffer_size_,
+                                         packet.payload_buffer_);
+    } else {
+      result.data = NULL;
+      result.length = 0xffff;  // data = NULL;
     }
+    return result;
 }
 
 
@@ -62,8 +62,19 @@ class CommandPacketHandler {
 
   template <typename Packet>
   void process_packet(Packet &packet) {
-    process_packet_with_processor(packet, command_processor_);
-    write_packet(ostream_, packet);
+    UInt8Array result = process_packet_with_processor(packet,
+                                                      command_processor_);
+    FixedPacket result_packet;
+    if (result.data == NULL) {
+      /* There was an error encountered while processing the request. */
+      result_packet.type(FixedPacket::packet_type::NACK);
+      result_packet.payload_length_ = 0;
+    } else {
+      result_packet.reset_buffer(result.length, result.data);
+      result_packet.payload_length_ = result.length;
+      result_packet.type(FixedPacket::packet_type::DATA);
+    }
+    write_packet(ostream_, result_packet);
   }
 };
 
