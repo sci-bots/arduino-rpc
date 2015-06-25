@@ -6,7 +6,8 @@ from . import get_sketch_directory
 from .dtypes import NP_STD_INT_TYPE, STD_ARRAY_TYPES
 
 
-def get_c_header_code(df_sig_info, namespace, extra_header=None):
+def get_c_header_code(df_sig_info, namespace, extra_header=None,
+                      extra_footer=None):
     template = jinja2.Template(r'''
 #ifndef ___{{ namespace.upper() }}___
 #define ___{{ namespace.upper() }}___
@@ -123,18 +124,23 @@ public:
 
 }  // namespace {{ namespace }}
 
+{% if extra_footer is not none %}
+{{ extra_footer }}
+{% endif %}
+
 #endif  // ifndef ___{{ namespace.upper() }}___
 '''.strip())
     return template.render(df_sig_info=df_sig_info, namespace=namespace,
-                           extra_header=extra_header)
+                           extra_header=extra_header,
+                           extra_footer=extra_footer)
 
 
-def get_python_code(df_sig_info, extra_header=None):
+def get_python_code(df_sig_info, extra_header=None, extra_footer=None):
     template = jinja2.Template(r'''
 import pandas as pd
 import numpy as np
 from nadamq.NadaMq import cPacket, PACKET_TYPES
-from arduino_rpc.proxy import ProxyBase, I2cProxyMixin, I2cSoftProxyMixin
+from arduino_rpc.proxy import ProxyBase
 
 
 {% if extra_header is not none %}
@@ -204,14 +210,12 @@ class Proxy(ProxyBase):
 {% endfor %}
 
 
-class I2cProxy(I2cProxyMixin, Proxy):
-    pass
-
-
-class I2cSoftProxy(I2cSoftProxyMixin, Proxy):
-    pass
+{% if extra_footer is not none %}
+{{ extra_footer }}
+{% endif %}
 '''.strip())
-    return template.render(df_sig_info=df_sig_info, extra_header=extra_header)
+    return template.render(df_sig_info=df_sig_info, extra_header=extra_header,
+                           extra_footer=extra_footer)
 
 
 def get_struct_sig_info_frame(df_sig_info):
