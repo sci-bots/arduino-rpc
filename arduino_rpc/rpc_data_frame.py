@@ -1,35 +1,22 @@
 from collections import OrderedDict
 
 import jinja2
-import pandas as pd
 import numpy as np
-from .rpc_code import STD_ARRAY_TYPES
 from . import get_sketch_directory
+from .dtypes import NP_STD_INT_TYPE, STD_ARRAY_TYPES
 
 
-NP_STD_INT_TYPE = pd.Series(OrderedDict([
-    ('bool', 'uint8'),
-    ('int8_t', 'int8'),
-    ('int8_t', 'int8'),
-    ('uint8_t', 'uint8'),
-    ('float', 'float32'),
-    ('int32_t', 'int32'),
-    ('int32_t', 'int32'),
-    ('int64_t', 'int64'),
-    ('int16_t', 'int16'),
-    ('uint8_t', 'uint8'),
-    ('uint32_t', 'uint32'),
-    ('uint64_t', 'uint64'),
-    ('uint16_t', 'uint16')]))
-
-
-def get_c_header_code(df_sig_info, namespace):
+def get_c_header_code(df_sig_info, namespace, extra_header=None):
     template = jinja2.Template(r'''
 #ifndef ___{{ namespace.upper() }}___
 #define ___{{ namespace.upper() }}___
 
 #include "Array.h"
 #include "remote_i2c_command.h"
+
+{% if extra_header is not none %}
+{{ extra_header }}
+{% endif %}
 
 namespace {{ namespace }} {
 
@@ -76,8 +63,7 @@ public:
      *  - `buffer_size`: The number of bytes in the arguments buffer.
      *  - `data`: The arguments buffer. */
     uint8_t command = buffer[0];
-    int bytes_read = 0;
-    int bytes_written = 0;
+    UInt8Array result;
 
     /* Set the sub-request fields type based on the decoded message identifier
      * tag, which corresponds to a value in the `CommandType` enumerated type.
@@ -109,30 +95,27 @@ public:
             uint16_t length = (response.result.length *
                                sizeof(response.result.data[0]));
 
-            memcpy(&buffer[0], (uint8_t *)response.result.data, length);
-            bytes_written += length;
+            result.data = (uint8_t *)response.result.data;
+            result.length = length;
     {%- else %}
             /* Cast start of buffer as reference of result type and assign result. */
             {{ camel_name }}Response &output = *(reinterpret_cast
                                                  <{{ camel_name }}Response *>
                                                  (&buffer[0]));
             output = response;
-            bytes_written += sizeof(output);
+            result.data = buffer;
+            result.length = sizeof(output);
     {%- endif %}
+    {%- else %}
+        result.data = buffer;
+        result.length = 0;
     {%- endif %}
           }
           break;
 {% endfor %}
       default:
-        bytes_written = -1;
-    }
-    UInt8Array result;
-    if (bytes_written < 0) {
         result.length = 0xFFFF;
         result.data = NULL;
-    } else {
-        result.length = bytes_written;
-        result.data = buffer;
     }
     return result;
   }
@@ -142,15 +125,21 @@ public:
 
 #endif  // ifndef ___{{ namespace.upper() }}___
 '''.strip())
-    return template.render(df_sig_info=df_sig_info, namespace=namespace)
+    return template.render(df_sig_info=df_sig_info, namespace=namespace,
+                           extra_header=extra_header)
 
 
-def get_python_code(df_sig_info):
+def get_python_code(df_sig_info, extra_header=None):
     template = jinja2.Template(r'''
 import pandas as pd
 import numpy as np
 from nadamq.NadaMq import cPacket, PACKET_TYPES
-from arduino_rpc.proxy import ProxyBase
+from arduino_rpc.proxy import ProxyBase, I2cProxyMixin, I2cSoftProxyMixin
+
+
+{% if extra_header is not none %}
+{{ extra_header }}
+{% endif %}
 
 
 class Proxy(ProxyBase):
@@ -213,8 +202,16 @@ class Proxy(ProxyBase):
         return result[0]
 {% endif %}{% endif %}
 {% endfor %}
+
+
+class I2cProxy(I2cProxyMixin, Proxy):
+    pass
+
+
+class I2cSoftProxy(I2cSoftProxyMixin, Proxy):
+    pass
 '''.strip())
-    return template.render(df_sig_info=df_sig_info)
+    return template.render(df_sig_info=df_sig_info, extra_header=extra_header)
 
 
 def get_struct_sig_info_frame(df_sig_info):
