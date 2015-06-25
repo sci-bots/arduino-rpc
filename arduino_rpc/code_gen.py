@@ -26,11 +26,24 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
         frame.insert(0, 'header_name', path(header).name)
         frames.append(frame)
 
-    df_struct_sig_info = pd.concat(frames)
+    df_struct_sig_info = pd.concat(frames).reset_index(drop=True)
 
-    header_i = pd.Series(df_struct_sig_info.header_name.unique())
+    # Method names may occur in multiple headers.  Only process the last
+    # occurrence in the table for each method.
+    df_last_i = (df_struct_sig_info.loc[(df_struct_sig_info.arg_count == 0) |
+                                        (df_struct_sig_info.arg_i == 0)]
+                .reset_index().groupby('method_name').nth(-1)['index'])
+    df_struct_sig_info['index_0'] = (df_struct_sig_info.reset_index()
+                                    .groupby(['header_name',
+                                              'method_name'])['index']
+                                    .transform(lambda x: x.iloc[0]))
+    df_unique_methods = df_struct_sig_info[df_struct_sig_info.index_0 ==
+                                           df_last_i[df_struct_sig_info
+                                                     .method_name]].copy()
+
+    header_i = pd.Series(df_unique_methods.header_name.unique())
     header_i = pd.Series(header_i.index, index=header_i)
-    df_struct_sig_info.method_i += 0x30 * header_i[df_struct_sig_info
+    df_unique_methods.method_i += 0x30 * header_i[df_unique_methods
                                                    .header_name].values
 
 
@@ -41,6 +54,6 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
         output = out_file.open('wb')
 
     try:
-        print >> output, f_get_code(df_struct_sig_info)
+        print >> output, f_get_code(df_unique_methods)
     finally:
         output.close()
