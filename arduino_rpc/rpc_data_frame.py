@@ -13,7 +13,6 @@ def get_c_header_code(df_sig_info, namespace, extra_header=None,
 #define ___{{ namespace.upper() }}___
 
 #include "Array.h"
-#include "remote_i2c_command.h"
 
 {% if extra_header is not none %}
 {{ extra_header }}
