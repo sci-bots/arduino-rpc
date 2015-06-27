@@ -15,3 +15,4 @@ build/*
 */protobuf/*.proto
 .sconsign.dblite
 arduino_rpc/protobuf_commands.py
+dist/*
