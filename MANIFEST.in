@@ -4,3 +4,4 @@ include version.py
 include pavement.py
 include paver-minilib.zip
 include setup.py
+recursive-include arduino_rpc *
