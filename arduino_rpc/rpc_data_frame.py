@@ -251,15 +251,13 @@ def generate_rpc_buffer_header(output_dir, **kwargs):
     source_dir = kwargs.pop('source_dir', get_sketch_directory())
     template_filename = kwargs.get('template_filename', 'RPCBuffer.ht')
 
-    default_settings = {'I2C_PACKET_SIZE': 32, 'PACKET_SIZE': 40,
-                        'COMMAND_ARRAY_BUFFER_SIZE': 40,
-                        'allocate_command_array_buffer': True,
-                        'test': {'I2C_PACKET_SIZE': 124321}}
+    default_settings = OrderedDict([('PACKET_SIZE', 80),
+                                    ('I2C_PACKET_SIZE', 'PACKET_SIZE')])
     board_settings = OrderedDict([
         ('uno', {'code': '__AVR_ATmega328P__', 'settings': default_settings}),
         ('mega2560', {'code': '__AVR_ATmega2560__',
-                      'settings': dict(default_settings, PACKET_SIZE=256,
-                                       COMMAND_ARRAY_BUFFER_SIZE=256)}),
+                      'settings': OrderedDict(default_settings,
+                                              PACKET_SIZE=256)}),
         ('default', {'settings': default_settings})])
 
     kwargs.update({'board_settings': board_settings})
