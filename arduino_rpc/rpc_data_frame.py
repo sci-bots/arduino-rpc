@@ -54,29 +54,25 @@ public:
     static const int CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }};
 {%- endfor %}
 
-  UInt8Array process_command(uint16_t request_size, uint16_t buffer_size,
-                             uint8_t *buffer) {
+  UInt8Array process_command(UInt8Array request_arr, UInt8Array buffer) {
     /* ## Call operator ##
      *
      * Arguments:
      *
-     *  - `request`: Protocol buffer command request structure,
-     *  - `buffer_size`: The number of bytes in the arguments buffer.
-     *  - `data`: The arguments buffer. */
-    uint8_t command = buffer[0];
+     *  - `request_arr`: Serialized command request structure array,
+     *  - `buffer`: Buffer array (available for writing output). */
+
     UInt8Array result;
 
-    /* Set the sub-request fields type based on the decoded message identifier
-     * tag, which corresponds to a value in the `CommandType` enumerated type.
-     */
-    switch (command) {
+    // Interpret first byte of request as command code.
+    switch (request_arr.data[0]) {
 {% for (method_i, method_name, camel_name, arg_count), df_method_i in df_sig_info.groupby(['method_i', 'method_name', 'camel_name', 'arg_count']) %}
         case CMD_{{ method_name.upper() }}:
           {
             /* Cast buffer as request. */
             {{ camel_name }}Request &request = *(reinterpret_cast
                                           <{{ camel_name }}Request *>
-                                          (&buffer[1]));
+                                          (&request_arr.data[1]));
     {% if df_method_i.ndims.max() > 0 %}
             /* Add relative array data offsets to start payload structure. */
     {% for i, array_i in df_method_i[df_method_i.ndims > 0].iterrows() %}
@@ -102,13 +98,13 @@ public:
             /* Cast start of buffer as reference of result type and assign result. */
             {{ camel_name }}Response &output = *(reinterpret_cast
                                                  <{{ camel_name }}Response *>
-                                                 (&buffer[0]));
+                                                 (&buffer.data[0]));
             output = response;
-            result.data = buffer;
+            result.data = buffer.data;
             result.length = sizeof(output);
     {%- endif %}
     {%- else %}
-        result.data = buffer;
+        result.data = buffer.data;
         result.length = 0;
     {%- endif %}
           }
