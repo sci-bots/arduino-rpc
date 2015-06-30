@@ -25,9 +25,13 @@ UInt8Array process_packet_with_processor(Packet &packet,
           Serial.println("");
       }
 #endif
-      result = processor.process_command(packet.payload_length_,
-                                         packet.buffer_size_,
-                                         packet.payload_buffer_);
+      UInt8Array request;
+      UInt8Array buffer;
+      request.data = packet.payload_buffer_;
+      request.length = packet.payload_length_;
+      buffer = request;
+      buffer.length = packet.buffer_size_;
+      result = processor.process_command(request, buffer);
     } else {
       result.data = NULL;
       result.length = 0xffff;  // data = NULL;
@@ -65,7 +69,7 @@ class CommandPacketHandler {
     UInt8Array result = process_packet_with_processor(packet,
                                                       command_processor_);
     FixedPacket result_packet;
-    if (result.data == NULL) {
+    if (result.data == NULL && result.length > 0) {
       /* There was an error encountered while processing the request. */
       result_packet.type(FixedPacket::packet_type::NACK);
       result_packet.payload_length_ = 0;
