@@ -43,8 +43,8 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
 
     header_i = pd.Series(df_unique_methods.header_name.unique())
     header_i = pd.Series(header_i.index, index=header_i)
-    df_unique_methods.method_i += 0x30 * header_i[df_unique_methods
-                                                   .header_name].values
+    df_unique_methods.method_i += 0x20 * header_i[df_unique_methods
+                                                  .header_name].values
 
 
     if out_file == '-':
