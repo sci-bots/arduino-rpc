@@ -132,10 +132,17 @@ public:
 
 def get_python_code(df_sig_info, extra_header=None, extra_footer=None):
     template = jinja2.Template(r'''
+import types
 import pandas as pd
 import numpy as np
 from nadamq.NadaMq import cPacket, PACKET_TYPES
 from arduino_rpc.proxy import ProxyBase
+try:
+    from google.protobuf.message import Message
+    _translate = (lambda arg: arg.SerializeToString()
+                  if isinstance(arg, Message) else arg)
+except ImportError:
+    _translate = lambda arg: arg
 
 
 {% if extra_header is not none %}
@@ -156,6 +163,9 @@ class Proxy(ProxyBase):
         ARG_STRUCT_SIZE = {{ df_method_i.struct_size.sum() }}
 {%- if df_method_i.ndims.max() > 0 %}
 {% for i, array_i in df_method_i[df_method_i.ndims > 0].iterrows() %}
+        {{ array_i['arg_name'] }} = _translate({{ array_i['arg_name'] }})
+        if isinstance({{ array_i['arg_name'] }}, str):
+            {{ array_i['arg_name'] }} = map(ord, {{ array_i['arg_name'] }})
         # Argument is an array, so cast to appropriate array type.
         {{ array_i['arg_name'] }} = np.ascontiguousarray({{ array_i['arg_name'] }}, dtype='{{ array_i.atom_np_type }}')
 {%- endfor %}
@@ -177,8 +187,11 @@ class Proxy(ProxyBase):
         struct_data = np.array([(
 {%- for i, (arg_name, ndims, np_atom_type) in df_method_i[['arg_name', 'ndims', 'atom_np_type']].iterrows() -%}
 {%- if ndims > 0 -%}
-        array_info.length['{{ arg_name }}'], ARG_STRUCT_SIZE + array_info.start['{{ arg_name }}'], {% else -%}
-        {{ arg_name }}, {% endif %}{% endfor %})],
+        array_info.length['{{ arg_name }}'], ARG_STRUCT_SIZE + array_info.start['{{ arg_name }}'], {# #}
+{%- else -%}
+        {{ arg_name }}, {# #}
+{%- endif -%}
+{% endfor %})],
                                dtype=[
 {%- for i, (arg_name, ndims, np_atom_type) in df_method_i[['arg_name', 'ndims', 'atom_np_type']].iterrows() -%}
 {%- if ndims > 0 -%}
