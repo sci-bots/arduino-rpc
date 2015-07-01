@@ -235,11 +235,11 @@ def get_struct_sig_info_frame(df_sig_info):
     df_sig_info['struct_size'] = 0
 
     df_sig_info.insert(4, 'return_atom_np_type', None)
-    df_sig_info.loc[~df_sig_info.return_atom_type.isin([None]),
-                    'return_atom_np_type'] = \
-        NP_STD_INT_TYPE[df_sig_info.loc[~df_sig_info.return_atom_type
-                                        .isin([None]),
-                                        'return_atom_type']].values
+    df_sig_info = df_sig_info[~df_sig_info.return_atom_type
+                              .isin([np.NaN])].copy()
+    none_mask = (~df_sig_info.return_atom_type.isin([None]))
+    df_sig_info.loc[none_mask, 'return_atom_np_type'] = \
+        NP_STD_INT_TYPE[df_sig_info.loc[none_mask, 'return_atom_type']].values
     df_sig_info.insert(5, 'return_struct_atom_type',
                        df_sig_info['return_atom_type'])
     df_sig_info.loc[df_sig_info.return_ndims > 0, 'return_struct_atom_type'] = \
