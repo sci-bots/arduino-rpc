@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import nadamq
+import arduino_array
 from path_helpers import path
 
 
@@ -34,8 +35,8 @@ def get_includes():
         ...
 
     '''
-    return [get_sketch_directory(),
-            get_nanopb_directory()] + nadamq.get_includes()
+    return ([get_sketch_directory(), get_nanopb_directory()] +
+            arduino_array.get_includes() + nadamq.get_includes())
 
 
 def get_sources():
