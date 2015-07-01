@@ -14,6 +14,7 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
     if isinstance(class_name, types.StringTypes):
         class_name = [class_name]
     assert(len(cpp_header) == len(class_name))
+    methods_filter = kwargs.pop('methods_filter', lambda x: x)
 
     frames = []
     for header, class_ in zip(cpp_header, class_name):
@@ -47,6 +48,8 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
     df_unique_methods.method_i += 0x20 * class_i[df_unique_methods
                                                  .class_name].values
 
+    # Apply filter to methods (accepts all rows by default).
+    df_methods = methods_filter(df_unique_methods)
 
     if out_file == '-':
         # Write code to `stdout`.
@@ -55,6 +58,6 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
         output = out_file.open('wb')
 
     try:
-        print >> output, f_get_code(df_unique_methods)
+        print >> output, f_get_code(df_methods)
     finally:
         output.close()
