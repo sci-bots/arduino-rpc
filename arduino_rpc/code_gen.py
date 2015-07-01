@@ -24,6 +24,7 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
 
         frame = get_struct_sig_info_frame(df_sig_info)
         frame.insert(0, 'header_name', path(header).name)
+        frame.insert(1, 'class_name', class_)
         frames.append(frame)
 
     df_struct_sig_info = pd.concat(frames).reset_index(drop=True)
@@ -34,17 +35,17 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
                                         (df_struct_sig_info.arg_i == 0)]
                 .reset_index().groupby('method_name').nth(-1)['index'])
     df_struct_sig_info['index_0'] = (df_struct_sig_info.reset_index()
-                                    .groupby(['header_name',
+                                    .groupby(['class_name',
                                               'method_name'])['index']
                                     .transform(lambda x: x.iloc[0]))
     df_unique_methods = df_struct_sig_info[df_struct_sig_info.index_0 ==
                                            df_last_i[df_struct_sig_info
                                                      .method_name]].copy()
 
-    header_i = pd.Series(df_unique_methods.header_name.unique())
-    header_i = pd.Series(header_i.index, index=header_i)
-    df_unique_methods.method_i += 0x20 * header_i[df_unique_methods
-                                                  .header_name].values
+    class_i = pd.Series(df_unique_methods.class_name.unique())
+    class_i = pd.Series(class_i.index, index=class_i)
+    df_unique_methods.method_i += 0x20 * class_i[df_unique_methods
+                                                 .class_name].values
 
 
     if out_file == '-':
