@@ -17,4 +17,6 @@ setup(name='wheeler.arduino_rpc',
       license='GPLv2',
       install_requires=['nadamq', 'path_helpers', 'clang_helpers>=0.2.post3',
                         'arduino-array'],
+      # Install data listed in `MANIFEST.in`
+      include_package_data=True,
       packages=['arduino_rpc'])
