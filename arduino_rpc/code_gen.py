@@ -8,13 +8,12 @@ from clang_helpers.data_frame import get_clang_methods_frame
 from .rpc_data_frame import get_struct_sig_info_frame
 
 
-def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
+def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
     if isinstance(cpp_header, types.StringTypes):
         cpp_header = [cpp_header]
     if isinstance(class_name, types.StringTypes):
         class_name = [class_name]
     assert(len(cpp_header) == len(class_name))
-    methods_filter = kwargs.pop('methods_filter', lambda x: x)
 
     frames = []
     for header, class_ in zip(cpp_header, class_name):
@@ -47,9 +46,17 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
     class_i = pd.Series(class_i.index, index=class_i)
     df_unique_methods.method_i += 0x20 * class_i[df_unique_methods
                                                  .class_name].values
+    return df_unique_methods
+
+
+def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
+    methods_filter = kwargs.pop('methods_filter', lambda x: x)
 
     # Apply filter to methods (accepts all rows by default).
-    df_methods = methods_filter(df_unique_methods)
+    df_methods = methods_filter(get_multilevel_method_sig_frame(cpp_header,
+                                                                class_name,
+                                                                *args,
+                                                                **kwargs))
 
     if out_file == '-':
         # Write code to `stdout`.
