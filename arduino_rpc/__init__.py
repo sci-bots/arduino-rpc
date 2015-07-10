@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-import nadamq
-import arduino_array
 from path_helpers import path
 
 
@@ -9,15 +7,18 @@ def package_path():
     return path(__file__).parent
 
 
+def get_library_directory():
+    '''
+    Return directory containing the Arduino library headers.
+    '''
+    return package_path().joinpath('Arduino', 'library')
+
+
 def get_sketch_directory():
     '''
     Return directory containing the Arduino sketch.
     '''
     return package_path().joinpath('Arduino', package_path().name)
-
-
-def get_nanopb_directory():
-    return package_path().joinpath('libs', 'nanopb')
 
 
 def get_includes():
@@ -35,8 +36,15 @@ def get_includes():
         ...
 
     '''
-    return ([get_sketch_directory(), get_nanopb_directory()] +
-            arduino_array.get_includes() + nadamq.get_includes())
+    import nanopb_helpers
+    import nadamq
+    import arduino_array
+    import arduino_memory
+
+    includes = ([get_library_directory(), get_sketch_directory()] +
+                nanopb_helpers.get_includes() + nadamq.get_includes() +
+                arduino_memory.get_includes() + arduino_array.get_includes())
+    return includes
 
 
 def get_sources():
@@ -44,7 +52,11 @@ def get_sources():
     Return Arduino source file paths.  This includes any supplementary source
     files that are not contained in Arduino libraries.
     '''
-    return get_sketch_directory().files('*.c*')
+    import nanopb_helpers
+    import nadamq
+
+    return (get_sketch_directory().files('*.c*') + nadamq.get_sources() +
+            nanopb_helpers.get_sources())
 
 
 def get_firmwares():
