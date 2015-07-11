@@ -69,9 +69,11 @@ public:
         case CMD_{{ method_name.upper() }}:
           {
             /* Cast buffer as request. */
+    {% if arg_count > 0 %}
             {{ camel_name }}Request &request = *(reinterpret_cast
                                           <{{ camel_name }}Request *>
                                           (&request_arr.data[1]));
+    {% endif %}
     {% if df_method_i.ndims.max() > 0 %}
             /* Add relative array data offsets to start payload structure. */
     {% for i, array_i in df_method_i[df_method_i.ndims > 0].iterrows() %}

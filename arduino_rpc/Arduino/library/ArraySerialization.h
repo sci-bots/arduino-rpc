@@ -49,20 +49,19 @@ static bool write_byte_array(pb_ostream_t *stream, const pb_field_t *field,
 static bool write_float_array(pb_ostream_t *stream, const pb_field_t *field,
                               void * const *arg) {
     UInt8Array const &array = *((UInt8Array const *)(*arg));
-    float value;
 
     if (!pb_encode_tag(stream, PB_WT_STRING, field->tag)) {
       return false;
     }
     pb_ostream_t substream = PB_OSTREAM_SIZING;
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_fixed32(&substream, &array.data[i]);
     }
 
     pb_encode_varint(stream, substream.bytes_written);
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_fixed32(stream, &array.data[i]);
     }
     return true;
@@ -95,13 +94,13 @@ static bool write_float_array(pb_ostream_t *stream, const pb_field_t *field,
     }
     pb_ostream_t substream = PB_OSTREAM_SIZING;
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_fixed32(&substream, &array.data[i]);
     }
 
     pb_encode_varint(stream, substream.bytes_written);
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_fixed32(stream, &array.data[i]);
     }
     return true;
@@ -148,13 +147,13 @@ static bool write_uint_array(pb_ostream_t *stream, const pb_field_t *field,
     }
     pb_ostream_t substream = PB_OSTREAM_SIZING;
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_varint(&substream, array.data[i]);
     }
 
     pb_encode_varint(stream, substream.bytes_written);
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_varint(stream, array.data[i]);
     }
     return true;
@@ -172,13 +171,13 @@ static bool write_int_array(pb_ostream_t *stream, const pb_field_t *field,
     }
     pb_ostream_t substream = PB_OSTREAM_SIZING;
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_svarint(&substream, array.data[i]);
     }
 
     pb_encode_varint(stream, substream.bytes_written);
 
-    for (int i = 0; i < array.length; i++) {
+    for (uint16_t i = 0; i < array.length; i++) {
       pb_encode_svarint(stream, array.data[i]);
     }
     return true;
