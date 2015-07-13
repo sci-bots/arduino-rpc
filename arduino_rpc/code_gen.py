@@ -9,6 +9,28 @@ from .rpc_data_frame import get_struct_sig_info_frame
 
 
 def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
+    '''
+    Given one or more C++ header paths, each with a corresponding C++ class
+    name, return a `pandas.DataFrame` with one row per method argument.
+
+
+    Notes
+    -----
+
+     - Each row in the frame has a `class_name` (including namespace) and
+       `method_name`, indicating the specific method that corresponds to the
+       row argument.
+     - Template classes are supported.  For example, the class defined as:
+
+           class ClassName<typename Parameter1, typename Parameter2> {...};
+
+       is referenced in the frame with the `class_name` of
+       `ClassName<Parameter1,Parameter2>`.
+     - Only rows corresponding to the *last* occurrence of each method name are
+       included in the data frame.  The order is determined by the order of the
+       headers and classes provided in the `cpp_header` argument and the
+       `class_name` argument, respectively.
+    '''
     if isinstance(cpp_header, types.StringTypes):
         cpp_header = [cpp_header]
     if isinstance(class_name, types.StringTypes):
@@ -50,6 +72,31 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
 
 
 def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
+    '''
+    Provided a list of C++ header files and a list of class names to discover
+    in the corresponding files, write the result of the provided `f_get_code`
+    function to the supplied output file path.
+
+    Method signatures are found using the `get_multilevel_method_sig_frame`
+    function (see function docstring for more details).
+
+    Note that for methods with the same name, only the last discovered method
+    (according to the order in the `class_name` list) will be included in the
+
+    Arguments
+    ---------
+
+     - `cpp_header`: A single filepath to a C++ header, or a list of header
+       paths.
+     - `class_name`: A single C++ class name (including namespace), or a list
+       of class names.
+       * Template classes are supported.  For example, the class defined as:
+
+             class ClassName<typename Parameter1, typename Parameter2> {...};
+
+         is referenced in the frame with the `class_name` of
+         `ClassName<Parameter1,Parameter2>`.
+    '''
     methods_filter = kwargs.pop('methods_filter', lambda x: x)
 
     # Apply filter to methods (accepts all rows by default).
