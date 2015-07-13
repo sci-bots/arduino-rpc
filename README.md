@@ -142,12 +142,19 @@ For example:
 
 ## Python ##
 
-Generate a `Proxy` Python class:
-   * One method for each "command".  Each method does the following operations:
-     - Serialize method arguments and command code to command array.
-     - Send serialized command to remote device.
-     - Decode device response into Python types.
-     - Return decoded result.
+Generate a `Proxy` Python class with one method for each "command".  Each
+method performs the following operations:
+
+ - Serialize method arguments and command code to command array.
+ - Send serialized command to remote device.
+ - Decode device response into Python types.
+ - Return decoded result.
+
+### Usage ###
+
+For example, consider the `Node` class from the inheritance example above.  The
+following code would write the Python `Proxy` class to the path specified by
+`output_path`.
 
     from arduino_rpc.code_gen import write_code
     from arduino_rpc.rpc_data_frame import get_python_code
@@ -158,29 +165,27 @@ Generate a `Proxy` Python class:
                get_python_code,  # function to map to method signatures frame
                *['-I%s' % include_path])  # path containing headers
 
-
-    from arduino_rpc.code_gen import write_code
-    from arduino_rpc.rpc_data_frame import get_c_header_code
-
-    write_code(input_headers, input_classes, output_header, f_get_code,
-               *['-I%s' % p for p in [lib_dir.abspath()] +
-                 arduino_array.get_includes()], methods_filter=methods_filter)
-
 ## C++ ##
 
- - Generate a `CommandProcessor<Node>` C++ class with the following method:
+Generate a `CommandProcessor<Node>` C++ class with the following method:
 
-       UInt8Array process_command(UInt8Array request_arr, UInt8Array buffer)
+    UInt8Array process_command(UInt8Array request_arr, UInt8Array buffer)
 
-   * `process_command` arguments:
-     - `request_arr`: Serialized command request structure array.
-     - `buffer`: Buffer array (available for writing output).
-   * `CommandProcessor<Node>` is constructed with reference to instance of
-     object of type `Node`.
-   * The `process_command` method decodes the command and arguments from the
-     `request_arr` and calls the corresponding method on the `Node` instance
-     (passing in the decoded arguments).  The return value of the method is
-     written to the output `buffer` array.
+ - `process_command` arguments:
+     * `request_arr`: Serialized command request structure array.
+     * `buffer`: Buffer array (available for writing output).
+ - `CommandProcessor<Node>` is constructed with reference to instance of object
+   of type `Node`.
+ - The `process_command` method decodes the command and arguments from the
+   `request_arr` and calls the corresponding method on the `Node` instance
+   (passing in the decoded arguments).  The return value of the method is
+   written to the output `buffer` array.
+
+### Usage ###
+
+For example, consider the `Node` class from the inheritance example above.  The
+following code would write the C++ `CommandProcessor` wrapper class header to
+the path specified by `output_path`.
 
     from arduino_rpc.code_gen import write_code
     from arduino_rpc.rpc_data_frame import get_c_header_code
@@ -194,12 +199,13 @@ Generate a `Proxy` Python class:
 
 # Projects using `arduino_rpc` #
 
- - [base-node-rpc][1]:
-   * A memory-efficient set of base classes providing an API to most of the
-     Arduino API, including EEPROM access, raw I2C master-write/slave-request,
-     etc.
-   * Support for processing RPC command requests through either serial or I2C
-     interface.
+ - base-node-rpc: Base classes for Arduino RPC node/device.
+     * A memory-efficient set of base classes providing an API to most of the
+       Arduino API, including EEPROM access, raw I2C
+       master-write/slave-request, etc.
+     * Support for processing RPC command requests through either serial or I2C
+       interface.
+     * For more info see [here][1].
 
 
 # Author #
