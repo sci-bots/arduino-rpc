@@ -15,7 +15,7 @@ setup(name='wheeler.arduino_rpc',
       author_email='christian@fobel.net',
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       license='GPLv2',
-      install_requires=['nadamq>=0.5.post2', 'path_helpers',
+      install_requires=['pandas>=0.15', 'nadamq>=0.5.post2', 'path_helpers',
                         'clang_helpers>=0.3', 'arduino-array',
                         'arduino-memory'],
       # Install data listed in `MANIFEST.in`
