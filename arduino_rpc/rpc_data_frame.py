@@ -8,6 +8,20 @@ from .dtypes import NP_STD_INT_TYPE, STD_ARRAY_TYPES
 
 def get_c_header_code(df_sig_info, namespace, extra_header=None,
                       extra_footer=None):
+    '''
+    Generate C++ command processor header code, which decodes a command from an
+    incoming array and calls the corresponding method on a wrapped object
+    instance.
+
+    Arguments
+    ---------
+
+     - `df_sig_info`: A `pandas.DataFrame` with one row per method argument (as
+       returned by `arduino_rpc.code_gen.get_multilevel_method_sig_frame`).
+     - `namespace`: Namespace to wrap `CommandProcessor` header in.
+     - `extra_header`: Extra text to insert before the namespace (optional).
+     - `extra_footer`: Extra text to insert after the namespace (optional).
+    '''
     template = jinja2.Template(r'''
 #ifndef ___{{ namespace.upper() }}___
 #define ___{{ namespace.upper() }}___
@@ -133,6 +147,23 @@ public:
 
 
 def get_python_code(df_sig_info, extra_header=None, extra_footer=None):
+    '''
+    Generate Python `Proxy` class, with one method for each corresponding
+    method signature in `df_sig_info`.  Each method on the `Proxy` class:
+
+     - Encodes method command and Python arguments into a serialized command
+       array.
+     - Sends command to remote device.
+     - Decodes the result into Python types.
+
+    Arguments
+    ---------
+
+     - `df_sig_info`: A `pandas.DataFrame` with one row per method argument (as
+       returned by `arduino_rpc.code_gen.get_multilevel_method_sig_frame`).
+     - `extra_header`: Extra text to insert before class definition (optional).
+     - `extra_footer`: Extra text to insert after class definition (optional).
+    '''
     template = jinja2.Template(r'''
 import types
 import pandas as pd

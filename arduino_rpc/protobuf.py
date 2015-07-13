@@ -64,6 +64,18 @@ def extract_callback_data(df_protobuf, method_name):
     Return a (`pandas.DataFrame`, `pandas.Series`) tuple, corresponding to the
     parent message tags and the leaf field tag, respectively.
 
+    Arguments
+    ---------
+
+     - `df_protobuf`: A `pandas.DataFrame` as returned by
+       `get_protobuf_fields_frame` (one row per Protocol Buffer message field).
+     - `method_name`: The method handler name, of the form
+       `'on_<field1 name>[___<field2 name]>]_<signal>'`.
+
+
+    Notes
+    -----
+
     Each row of the parents data frame contains the following values:
 
       - `msg_name`: Protocol Buffer submessage name.
