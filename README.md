@@ -6,10 +6,11 @@ Arduino).
 
 The main features of this package include:
 
- - Extract method signatures from class of type `T`.
+ - Extract method signatures from user-defined C++ class.
  - Assign a unique *"command code"* to each method.
  - Generate a `CommandProcessor<T>` C++ class, which calls appropriate method
-   on type `T` provided the corresponding serialized command array.
+   on instance of user type provided the corresponding serialized command
+   array.
  - Generate a `Proxy` Python class to call methods on remote device by
    serializing Python method call as command request and decoding command
    response from device as Python type(s).
@@ -105,33 +106,105 @@ is referenced in the frame with the `class_name` of
 
 # Code generation #
 
-## Python ##
+The `arduino_rpc` package includes functions to serialize/deserialize commands,
+where each command corresponds to a method signature extracted as described in
+the *"Extract method signatures"* section above.
+
+Given a list of method signatures (see *"Extract method signatures"*), the
+basic idea is:
 
  - Assign a unique *"command code"* to each method.
- - Generate a `Proxy` Python class:
+ - Generate a Python class with one method per command.
+ - Generate a C++ class that wraps an instance of the user-defined C++ class,
+   and calls a method on the wrapped instance based on a "command code".
+
+## Command flow ##
+
+Each call to a method of a Python `Proxy` instance triggers a remote procedure
+call (RPC) to the corresponding method on the wrapped user class instance on
+the device.
+
+For example:
+
+       Python (Proxy)                 C++ (CommandProcessor)
+       ==============                 ======================
+
+       proxy.add(a, b)
+
+        encode("add",     encoded
+               a, b)  ->  command ->  result = wrapper.process_command(array,
+                           array                                       buffer)
+
+                          encoded
+        decode(result) <-  result <-  encode(result)
+                           array
+        return result
+
+## Python ##
+
+Generate a `Proxy` Python class:
    * One method for each "command".  Each method does the following operations:
      - Serialize method arguments and command code to command array.
      - Send serialized command to remote device.
      - Decode device response into Python types.
      - Return decoded result.
 
+    from arduino_rpc.code_gen import write_code
+    from arduino_rpc.rpc_data_frame import get_python_code
+
+    write_code(['A.hpp', 'B.hpp', 'Node.hpp'],  # headers
+               ['A', 'B', 'Node'],  # class names
+               output_path,  # output filename
+               get_python_code,  # function to map to method signatures frame
+               *['-I%s' % include_path])  # path containing headers
+
+
+    from arduino_rpc.code_gen import write_code
+    from arduino_rpc.rpc_data_frame import get_c_header_code
+
+    write_code(input_headers, input_classes, output_header, f_get_code,
+               *['-I%s' % p for p in [lib_dir.abspath()] +
+                 arduino_array.get_includes()], methods_filter=methods_filter)
+
 ## C++ ##
 
- - Generate a `CommandProcessor<T>` C++ class with the following method:
+ - Generate a `CommandProcessor<Node>` C++ class with the following method:
 
        UInt8Array process_command(UInt8Array request_arr, UInt8Array buffer)
 
    * `process_command` arguments:
      - `request_arr`: Serialized command request structure array.
      - `buffer`: Buffer array (available for writing output).
-   * `CommandProcessor<T>` is constructed with reference to instance of object
-     of type `T`.
+   * `CommandProcessor<Node>` is constructed with reference to instance of
+     object of type `Node`.
    * The `process_command` method decodes the command and arguments from the
-     `request_arr` and calls the corresponding method on the `T` instance
+     `request_arr` and calls the corresponding method on the `Node` instance
      (passing in the decoded arguments).  The return value of the method is
      written to the output `buffer` array.
+
+    from arduino_rpc.code_gen import write_code
+    from arduino_rpc.rpc_data_frame import get_c_header_code
+
+    write_code(['A.hpp', 'B.hpp', 'Node.hpp'],  # headers
+               ['A', 'B', 'Node'],  # class names
+               output_path,  # output filename
+               get_c_header_code,  # function to map to method signatures frame
+               *['-I%s' % include_path])  # path containing headers
+
+
+# Projects using `arduino_rpc` #
+
+ - [base-node-rpc][1]:
+   * A memory-efficient set of base classes providing an API to most of the
+     Arduino API, including EEPROM access, raw I2C master-write/slave-request,
+     etc.
+   * Support for processing RPC command requests through either serial or I2C
+     interface.
 
 
 # Author #
 
 Copyright 2015 Christian Fobel <christian@fobel.net>
+
+
+[1]: https://github.com/wheeler-microfluidics/base_node_rpc

@@ -25,7 +25,7 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
            class ClassName<typename Parameter1, typename Parameter2> {...};
 
        is referenced in the frame with the `class_name` of
-       `ClassName<Parameter1,Parameter2>`.
+       `ClassName<Parameter1, Parameter2>`.
      - Only rows corresponding to the *last* occurrence of each method name are
        included in the data frame.  The order is determined by the order of the
        headers and classes provided in the `cpp_header` argument and the
