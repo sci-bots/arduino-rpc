@@ -15,6 +15,49 @@ The main features of this package include:
    serializing Python method call as command request and decoding command
    response from device as Python type(s).
 
+
+# What is this? #
+
+Much of the effort of coding our own Arduino projects was dedicated:
+
+ - To defining and writing protocols.
+ - Writing host code to interface with these project-specific protocols.
+
+There are a few problems with this:
+
+ - Lots of duplicated effort, redefining protocols for every project, or at
+   best, copying and pasting and modifying to suit.
+ - Brittle code, since any change on the device protocol API required the host
+   code to be updated separately to match.
+ - More time spent on just getting signals to/from the device than spent on the
+   real problem at hand.
+
+
+## What do we propose? ##
+
+Instead of writing the protocol for every project, we want to abstract the
+communication to and from the device as far away as possible from the actual
+interface connection _(e.g., serial, I2C, etc.)_.  The goal is to expose
+functions from the device to _a)_ other devices _(e.g., over I2C)_, and _b)_ to
+the host computer, without having to care about where the requested function
+call is coming from.
+
+To accomplish this we employ automatic code-generation to scan a set of
+user-defined functions that should be exposed and create code to call the
+functions through:
+
+ - Serial interface.
+ - I2C.
+
+Furthermore, we also get Python code to run on the host side to connect to the
+device over serial, or to devices on the I2C bus by forwarding requests through
+a device connected via serial.
+
+Voila!  No more writing protocols!  Just add methods to your class in your
+Arduino sketch, and the protocol will be auto-generated based on the function
+signatures.
+
+
 # Extract method signatures #
 
 The code generation mechanism in the `arduino_rpc` package assumes a single,
