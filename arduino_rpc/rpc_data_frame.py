@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 import jinja2
 import numpy as np
-from . import get_sketch_directory
+from . import get_library_directory
 from .dtypes import NP_STD_INT_TYPE, STD_ARRAY_TYPES
 
 
@@ -293,7 +293,7 @@ def get_struct_sig_info_frame(df_sig_info):
 def generate_rpc_buffer_header(output_dir, **kwargs):
     import warnings
 
-    source_dir = kwargs.pop('source_dir', get_sketch_directory())
+    source_dir = kwargs.pop('source_dir', get_library_directory())
     template_filename = kwargs.get('template_filename', 'RPCBuffer.ht')
 
     default_settings = OrderedDict([('PACKET_SIZE', 80),

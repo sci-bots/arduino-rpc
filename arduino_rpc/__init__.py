@@ -14,13 +14,6 @@ def get_library_directory():
     return package_path().joinpath('Arduino', 'library')
 
 
-def get_sketch_directory():
-    '''
-    Return directory containing the Arduino sketch.
-    '''
-    return package_path().joinpath('Arduino', package_path().name)
-
-
 def get_includes():
     '''
     Return directories containing the Arduino header files.
@@ -41,7 +34,7 @@ def get_includes():
     import arduino_array
     import arduino_memory
 
-    includes = ([get_library_directory(), get_sketch_directory()] +
+    includes = ([get_library_directory()] +
                 nanopb_helpers.get_includes() + nadamq.get_includes() +
                 arduino_memory.get_includes() + arduino_array.get_includes())
     return includes
@@ -55,8 +48,7 @@ def get_sources():
     import nanopb_helpers
     import nadamq
 
-    return (get_sketch_directory().files('*.c*') + nadamq.get_sources() +
-            nanopb_helpers.get_sources())
+    return nadamq.get_sources() + nanopb_helpers.get_sources()
 
 
 def get_firmwares():
