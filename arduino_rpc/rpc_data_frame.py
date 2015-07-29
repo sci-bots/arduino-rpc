@@ -6,8 +6,9 @@ from . import get_library_directory
 from .dtypes import NP_STD_INT_TYPE, STD_ARRAY_TYPES
 
 
-def get_c_header_code(df_sig_info, namespace, extra_header=None,
-                      extra_footer=None):
+def get_c_commands_header_code(df_sig_info, namespace, extra_header=None,
+                               extra_footer=None):
+    # TODO: Update doc string to reflect generating commands header
     '''
     Generate C++ command processor header code, which decodes a command from an
     incoming array and calls the corresponding method on a wrapped object
@@ -23,8 +24,8 @@ def get_c_header_code(df_sig_info, namespace, extra_header=None,
      - `extra_footer`: Extra text to insert after the namespace (optional).
     '''
     template = jinja2.Template(r'''
-#ifndef ___{{ namespace.upper() }}___
-#define ___{{ namespace.upper() }}___
+#ifndef ___{{ namespace.upper() }}__COMMANDS___
+#define ___{{ namespace.upper() }}__COMMANDS___
 
 #include "Array.h"
 
@@ -48,6 +49,53 @@ struct {{ camel_name }}Response {
 };
 {% endfor %}
 
+{% for i, (method_i, method_name) in df_sig_info.drop_duplicates(subset='method_i')[['method_i', 'method_name']].iterrows() %}
+static const int CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }};
+{%- endfor %}
+
+}  // namespace {{ namespace }}
+
+{% if extra_footer is not none %}
+{{ extra_footer }}
+{% endif %}
+
+#endif  // ifndef ___{{ namespace.upper() }}__COMMANDS___
+'''.strip())
+    return template.render(df_sig_info=df_sig_info, namespace=namespace,
+                           extra_header=extra_header,
+                           extra_footer=extra_footer)
+
+
+def get_c_command_processor_header_code(df_sig_info, namespace,
+                                        extra_header=None, extra_footer=None):
+    # TODO: Update doc string to reflect generating command processor header
+    '''
+    Generate C++ command processor header code, which decodes a command from an
+    incoming array and calls the corresponding method on a wrapped object
+    instance.
+
+    Arguments
+    ---------
+
+     - `df_sig_info`: A `pandas.DataFrame` with one row per method argument (as
+       returned by `arduino_rpc.code_gen.get_multilevel_method_sig_frame`).
+     - `namespace`: Namespace to wrap `CommandProcessor` header in.
+     - `extra_header`: Extra text to insert before the namespace (optional).
+     - `extra_footer`: Extra text to insert after the namespace (optional).
+    '''
+    template = jinja2.Template(r'''
+#ifndef ___{{ namespace.upper() }}__COMMAND_PROCESSOR___
+#define ___{{ namespace.upper() }}__COMMAND_PROCESSOR___
+
+#include "Array.h"
+#include "Commands.h"
+
+{% if extra_header is not none %}
+{{ extra_header }}
+{% endif %}
+
+namespace {{ namespace }} {
+
 template <typename Obj>
 class CommandProcessor {
   /* # `CommandProcessor` #
@@ -62,10 +110,6 @@ protected:
   Obj &obj_;
 public:
   CommandProcessor(Obj &obj) : obj_(obj) {}
-
-{% for i, (method_i, method_name) in df_sig_info.drop_duplicates(subset='method_i')[['method_i', 'method_name']].iterrows() %}
-    static const int CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }};
-{%- endfor %}
 
   UInt8Array process_command(UInt8Array request_arr, UInt8Array buffer) {
     /* ## Call operator ##

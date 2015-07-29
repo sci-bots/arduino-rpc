@@ -42,15 +42,19 @@ def get_protobuf_fields_frame(message_type):
     frames = []
 
     def _frames(root, parent_field=None):
-        frame = pd.DataFrame([(n, f) for n, f in root.fields_by_name.iteritems()
-                              if not f.type == f.TYPE_MESSAGE],
-                             columns=['field_name', 'field_desc'])
-        frame.insert(0, 'msg_name', root.name)
-        frame.insert(1, 'msg_desc', root)
-        frame.insert(2, 'parent_name', parent_field.name if parent_field else '')
-        frame.insert(3, 'parent_field', parent_field)
-        frame.insert(0, 'root_name', message_type.DESCRIPTOR.name)
-        frames.append(frame)
+        atom_fields = [(n, f) for n, f in root.fields_by_name.iteritems()
+                       if not f.type == f.TYPE_MESSAGE]
+        if atom_fields:
+            frame = pd.DataFrame(atom_fields,
+                                columns=['field_name', 'field_desc'])
+            frame.insert(0, 'msg_name', root.name)
+            frame.insert(1, 'msg_desc', root)
+            frame.insert(2, 'parent_name', parent_field.name
+                         if parent_field else '')
+            frame.insert(3, 'parent_field', parent_field)
+            frame.insert(0, 'root_name', message_type.DESCRIPTOR.name)
+            frames.append(frame)
+
         for n, f in root.fields_by_name.iteritems():
             if f.type == f.TYPE_MESSAGE:
                 _frames(f.message_type, parent_field=f)
