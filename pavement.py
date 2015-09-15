@@ -8,7 +8,7 @@ sys.path.insert(0, '.')
 import version
 
 
-setup(name='wheeler.arduino_rpc',
+setup(name='arduino-rpc',
       version=version.getVersion(),
       description='Arduino RPC node packaged as Python package.',
       author='Christian Fobel',
