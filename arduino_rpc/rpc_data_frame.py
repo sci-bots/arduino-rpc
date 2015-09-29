@@ -27,7 +27,7 @@ def get_c_commands_header_code(df_sig_info, namespace, extra_header=None,
 #ifndef ___{{ namespace.upper() }}__COMMANDS___
 #define ___{{ namespace.upper() }}__COMMANDS___
 
-#include "Array.h"
+#include "CArrayDefs.h"
 
 {% if extra_header is not none %}
 {{ extra_header }}
@@ -87,7 +87,7 @@ def get_c_command_processor_header_code(df_sig_info, namespace,
 #ifndef ___{{ namespace.upper() }}__COMMAND_PROCESSOR___
 #define ___{{ namespace.upper() }}__COMMAND_PROCESSOR___
 
-#include "Array.h"
+#include "CArrayDefs.h"
 #include "Commands.h"
 
 {% if extra_header is not none %}

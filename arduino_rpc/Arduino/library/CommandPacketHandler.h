@@ -2,7 +2,7 @@
 #define ___COMMAND_PACKET_HANDLER__H___
 
 
-#include "Array.h"
+#include "CArrayDefs.h"
 #include "PacketWriter.h"
 
 

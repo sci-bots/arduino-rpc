@@ -17,3 +17,5 @@ build/*
 arduino_rpc/protobuf_commands.py
 dist/*
 *~
+.project
+.pydevproject

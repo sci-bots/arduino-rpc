@@ -31,12 +31,12 @@ def get_includes():
     '''
     import nanopb_helpers
     import nadamq
-    import arduino_array
+    import c_array_defs
     import arduino_memory
 
     includes = ([get_library_directory()] +
                 nanopb_helpers.get_includes() + nadamq.get_includes() +
-                arduino_memory.get_includes() + arduino_array.get_includes())
+                arduino_memory.get_includes() + c_array_defs.get_includes())
     return includes
 
 
