@@ -14,6 +14,13 @@ def get_library_directory():
     return package_path().joinpath('Arduino', 'library')
 
 
+def get_lib_directory():
+    '''
+    Wrapper function to make API compatible with `base-node-rpc` package.
+    '''
+    return get_library_directory()
+
+
 def get_includes():
     '''
     Return directories containing the Arduino header files.
@@ -34,7 +41,7 @@ def get_includes():
     import c_array_defs
     import arduino_memory
 
-    includes = ([get_library_directory()] +
+    includes = (list(get_library_directory().walkdirs('src')) +
                 nanopb_helpers.get_includes() + nadamq.get_includes() +
                 arduino_memory.get_includes() + c_array_defs.get_includes())
     return includes

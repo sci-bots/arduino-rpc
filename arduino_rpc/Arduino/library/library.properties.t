@@ -1,0 +1,9 @@
+name={{ camel_name }}
+version={{ lib_version }}
+author={{ author }} {{ author_email }}
+maintainer={{ author }} {{ author_email }}
+sentence={{ short_description }}
+paragraph={{ long_description }}
+category={{ category }}
+url={{ url }}
+architectures=avr
