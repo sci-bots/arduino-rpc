@@ -1,9 +1,9 @@
 from collections import OrderedDict
 
-from path_helpers import path
-
 
 def package_path():
+    from path_helpers import path
+
     return path(__file__).parent
 
 

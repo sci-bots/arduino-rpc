@@ -42,7 +42,7 @@ options(
                author=properties['author'],
                url=properties['url'],
                version=properties['version'],
-               install_requires=['arduino-memory' 'c-array-defs>=0.1.post2',
+               install_requires=['arduino-memory', 'c-array-defs>=0.1.post2',
                                  'clang_helpers>=0.3', 'nadamq>=0.8.post1',
                                  'nanopb_helpers>=0.4', 'pandas>=0.15',
                                  'path_helpers'],
