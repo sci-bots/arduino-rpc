@@ -43,7 +43,7 @@ def verify_library_directory(options):
     cmd_opts = getattr(options, inspect.currentframe().f_back.f_code.co_name)
     output_dir = path(getattr(cmd_opts, 'lib_out_dir',
                               options.rpc_module.get_lib_directory()))
-    name = options.LIB_PROPERTIES['name']
+    name = options.LIB_PROPERTIES['package_name'].replace('-', '_')
     camel_name = underscore_to_camelcase(name)
     library_dir = output_dir.joinpath(camel_name)
     library_dir.makedirs_p()
@@ -63,7 +63,7 @@ def generate_arduino_library_properties(options):
                                     'rb').read())
     library_dir = verify_library_directory(options)
     library_properties = library_dir.joinpath('library.properties')
-    name = options.LIB_PROPERTIES['name']
+    name = options.LIB_PROPERTIES['package_name']
     camel_name = underscore_to_camelcase(name)
     version = re.sub(r'[^\d\.]+', '',
                      options.LIB_PROPERTIES.get('version', '0.1.0'))

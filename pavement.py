@@ -11,7 +11,7 @@ import arduino_rpc
 
 
 properties = dict(
-      name='arduino_rpc',
+      package_name='arduino_rpc',
       version=version.getVersion(),
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
       short_description='Code generation for memory-efficient '
@@ -33,7 +33,7 @@ properties = dict(
 options(
     rpc_module=arduino_rpc,
     LIB_PROPERTIES=properties,
-    setup=dict(name=properties['name'].replace('_', '-'),
+    setup=dict(name=properties['package_name'].replace('_', '-'),
                description='\n'.join([properties['short_description'],
                                       properties['long_description']]),
                author_email=properties['author_email'],
@@ -46,7 +46,7 @@ options(
                # Install data listed in `MANIFEST.in`
                include_package_data=True,
                license='GPLv2',
-               packages=[properties['name']]))
+               packages=[properties['package_name']]))
 
 
 @task
