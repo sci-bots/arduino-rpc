@@ -88,8 +88,9 @@ def copy_existing_headers(options):
 
 
 @task
+@cmdopts(LIB_CMDOPTS, share_with=LIB_GENERATE_TASKS)
 @needs('copy_existing_headers', 'generate_arduino_library_properties')
-def build_arduino_library():
+def build_arduino_library(options):
     import zipfile
 
     library_dir = verify_library_directory(options)
