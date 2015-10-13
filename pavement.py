@@ -1,8 +1,8 @@
 from pprint import pprint
 import sys
 
-from paver.easy import task, needs, path, sh, cmdopts, options
-from paver.setuputils import setup
+from paver.setuputils import setup, install_distutils_tasks
+from paver.easy import task, needs, path, environment, sh, cmdopts, options
 
 sys.path.insert(0, '.')
 from arduino_rpc.pavement_base import *
@@ -29,6 +29,8 @@ properties = dict(
       author='Christian Fobel',
       author_email='christian@fobel.net')
 
+
+install_distutils_tasks()
 
 options(
     rpc_module=arduino_rpc,
