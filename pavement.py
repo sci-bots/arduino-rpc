@@ -40,9 +40,10 @@ options(
                author=properties['author'],
                url=properties['url'],
                version=properties['version'],
-               install_requires=['pandas>=0.15', 'nadamq>=0.7.post2',
-                                 'path_helpers', 'clang_helpers>=0.3',
-                                 'c-array-defs>=0.1.post2', 'arduino-memory'],
+               install_requires=['arduino-memory' 'c-array-defs>=0.1.post2',
+                                 'clang_helpers>=0.3', 'nadamq>=0.8.post1',
+                                 'nanopb_helpers>=0.4', 'pandas>=0.15',
+                                 'path_helpers'],
                # Install data listed in `MANIFEST.in`
                include_package_data=True,
                license='GPLv2',
