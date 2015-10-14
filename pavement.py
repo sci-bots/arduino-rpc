@@ -60,24 +60,3 @@ options(
 def sdist():
     """Override sdist to make sure that our setup.py is generated."""
     pass
-
-
-@task
-@needs('setuptools.command.install')
-def install(options):
-    """Override install to copy Arduino library to sketch library directory."""
-    install_arduino_library(options)
-
-
-@task
-@needs('setuptools.command.develop')
-def develop(options):
-    """Override develop to copy Arduino library to sketch library directory."""
-    install_arduino_library(options)
-
-
-@task
-@needs('wheel.bdist_wheel')
-def bdist_wheel(options):
-    """Override develop to copy Arduino library to sketch library directory."""
-    install_arduino_library(options)
