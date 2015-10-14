@@ -13,11 +13,11 @@ LIB_CMDOPTS = [('lib_out_dir=', 'o', 'Output directory for Arduino library.')]
 
 def install_arduino_library(options):
     """Overrides install to copy Arduino library to sketch library directory."""
-    from arduino_helpers import default_sketchbook_directory
     import logging
+    from arduino_helpers import sketchbook_directory
 
     arduino_lib_source = verify_library_directory(options)
-    arduino_lib_destination = (default_sketchbook_directory()
+    arduino_lib_destination = (path(sketchbook_directory())
                                .joinpath('libraries', arduino_lib_source.name))
     recursive_overwrite(arduino_lib_source, arduino_lib_destination)
     logging.info('Copied %s to %s' % (arduino_lib_source,
