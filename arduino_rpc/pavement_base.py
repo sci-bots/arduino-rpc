@@ -11,13 +11,26 @@ LIB_GENERATE_TASKS = [prefix + h for h in
 LIB_CMDOPTS = [('lib_out_dir=', 'o', 'Output directory for Arduino library.')]
 
 
+def install_arduino_library(options):
+    """Overrides install to copy Arduino library to sketch library directory."""
+    from arduino_helpers import default_sketchbook_directory
+    import logging
+
+    arduino_lib_source = verify_library_directory(options)
+    arduino_lib_destination = (default_sketchbook_directory()
+                               .joinpath('libraries', arduino_lib_source.name))
+    recursive_overwrite(arduino_lib_source, arduino_lib_destination)
+    logging.info('Copied %s to %s' % (arduino_lib_source,
+                                      arduino_lib_destination))
+
+
 def recursive_overwrite(src, dest, ignore=None):
     '''
     http://stackoverflow.com/questions/12683834/how-to-copy-directory-recursively-in-python-and-overwrite-all#15824216
     '''
     if os.path.isdir(src):
         if not os.path.isdir(dest):
-            os.makedirs(dest)
+            path(dest).makedirs_p()
         files = os.listdir(src)
         if ignore is not None:
             ignored = ignore(src, files)
@@ -40,9 +53,14 @@ def verify_library_directory(options):
 
     from clang_helpers.data_frame import underscore_to_camelcase
 
-    cmd_opts = getattr(options, inspect.currentframe().f_back.f_code.co_name)
-    output_dir = path(getattr(cmd_opts, 'lib_out_dir',
-                              options.rpc_module.get_lib_directory()))
+    calling_function_name = inspect.currentframe().f_back.f_code.co_name
+    default_lib_dir = options.rpc_module.get_lib_directory()
+
+    if hasattr(options, calling_function_name):
+        cmd_opts = getattr(options, calling_function_name)
+        output_dir = path(getattr(cmd_opts, 'lib_out_dir', default_lib_dir))
+    else:
+        output_dir = default_lib_dir
     name = options.LIB_PROPERTIES['package_name'].replace('-', '_')
     camel_name = underscore_to_camelcase(name)
     library_dir = output_dir.joinpath(camel_name)
