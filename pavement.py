@@ -44,9 +44,10 @@ options(
                version=properties['version'],
                install_requires=['arduino-helpers>=0.3.post11',
                                  'arduino-memory', 'c-array-defs>=0.1.post2',
-                                 'clang-helpers>=0.3', 'nadamq>=0.8.post1',
-                                 'nanopb-helpers>=0.4', 'pandas>=0.15',
-                                 'path-helpers>=0.2', 'serial-device>=0.2'],
+                                 'clang-helpers>=0.3', 'jinja2',
+                                 'nadamq>=0.8.post1', 'nanopb-helpers>=0.4',
+                                 'pandas>=0.15', 'path-helpers>=0.2',
+                                 'serial-device>=0.2'],
                # Install data listed in `MANIFEST.in`
                include_package_data=True,
                license='GPLv2',
@@ -71,5 +72,12 @@ def install(options):
 @task
 @needs('setuptools.command.develop')
 def develop(options):
+    """Override develop to copy Arduino library to sketch library directory."""
+    install_arduino_library(options)
+
+
+@task
+@needs('wheel.bdist_wheel')
+def bdist_wheel(options):
     """Override develop to copy Arduino library to sketch library directory."""
     install_arduino_library(options)
