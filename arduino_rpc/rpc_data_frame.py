@@ -120,9 +120,10 @@ public:
      *  - `buffer`: Buffer array (available for writing output). */
 
     UInt8Array result;
+    uint16_t &command = *reinterpret_cast<uint16_t *>(&request_arr.data[0]);
 
     // Interpret first byte of request as command code.
-    switch (request_arr.data[0]) {
+    switch (command) {
 {% for (method_i, method_name, camel_name, arg_count), df_method_i in df_sig_info.groupby(['method_i', 'method_name', 'camel_name', 'arg_count']) %}
         case CMD_{{ method_name.upper() }}:
           {
@@ -130,7 +131,7 @@ public:
     {% if arg_count > 0 %}
             {{ camel_name }}Request &request = *(reinterpret_cast
                                           <{{ camel_name }}Request *>
-                                          (&request_arr.data[1]));
+                                          (&request_arr.data[2]));
     {% endif %}
     {% if df_method_i.ndims.max() > 0 %}
             /* Add relative array data offsets to start payload structure. */
@@ -230,12 +231,13 @@ except ImportError:
 class Proxy(ProxyBase):
 
 {% for i, (method_i, method_name) in df_sig_info.drop_duplicates(subset='method_i')[['method_i', 'method_name']].iterrows() %}
-    _CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }};
+    _CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }}
 {%- endfor %}
+    MAX_COMMAND_CODE = {{ df_sig_info.method_i.max() }}
 
 {% for (method_i, method_name, camel_name, arg_count), df_method_i in df_sig_info.groupby(['method_i', 'method_name', 'camel_name', 'arg_count']) %}
     def {{ method_name }}(self{% if arg_count > 0 %}, {{ ', '.join(df_method_i.arg_name) }}{% endif %}):
-        command = np.dtype('uint8').type(self._CMD_{{ method_name.upper() }})
+        command = np.dtype('uint16').type(self._CMD_{{ method_name.upper() }})
 {%- if arg_count > 0 %}
         ARG_STRUCT_SIZE = {{ df_method_i.struct_size.sum() }}
 {%- if df_method_i.ndims.max() > 0 %}

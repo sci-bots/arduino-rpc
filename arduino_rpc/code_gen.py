@@ -84,7 +84,9 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
 
     class_i = pd.Series(df_unique_methods.class_name.unique())
     class_i = pd.Series(class_i.index, index=class_i)
-    df_unique_methods.method_i += 0x20 * class_i[df_unique_methods
+
+    # **N.B.,** Allocate 256 command slots for each class.
+    df_unique_methods.method_i += 0xFF * class_i[df_unique_methods
                                                  .class_name].values
     return df_unique_methods
 
