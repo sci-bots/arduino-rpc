@@ -113,3 +113,47 @@ def extract_callback_data(df_protobuf, method_name):
     s_field['atom_type'] = TYPE_CALLABLE_MAP[s_field.field_desc.type]
     s_field.name = field
     return df_parents, s_field
+
+
+def get_field_value(root, field_descriptor, full_name):
+    '''
+    Extract field value from Protocol Buffer message `root`, based on the
+    '.'-separated full field name.
+
+    If the field is an enumerated type, return name of value.
+    '''
+    parent = root
+
+    level_fields = full_name.split('.')
+
+    for level in level_fields[:-1]:
+        parent = getattr(parent, level)
+    value = getattr(parent, level_fields[-1])
+    if field_descriptor.enum_type:
+        return field_descriptor.enum_type.values[value].name
+    else:
+        return value
+
+
+def resolve_field_values(message):
+    '''
+    Return a `pandas.DataFrame`, one row per Protocol Buffer atom field type
+    (e.g., `uint32`, `bool`, etc.), indexed by parent message name.
+    All fields related to the same parent can be accessed using:
+
+        df_fields.loc[<parent_name>]
+
+    The frame has the same columns as the frame returned from
+    `arduino_rpc.protobuf.get_protobuf_fields_frame` with the addition of the following
+    columns:
+
+     - `full_name`: A '.'-separated fully-qualified field name relative to the root.
+     - `value`: The value of the corresponding field in the supplied `message`.
+    '''
+    df_fields = get_protobuf_fields_frame(message)
+    df_fields['full_name'] = (df_fields['parent_name'].map(lambda v: v + '.' if v else '')
+                              + df_fields['field_name'])
+    df_fields['value'] = (df_fields[['field_desc', 'full_name']]
+                          .apply(lambda v: get_field_value(message, *v.values),
+                                 axis=1))
+    return df_fields.set_index('parent_name')
