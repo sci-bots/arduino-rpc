@@ -136,7 +136,7 @@ public:
     {% if df_method_i.ndims.max() > 0 %}
             /* Add relative array data offsets to start payload structure. */
     {% for i, array_i in df_method_i[df_method_i.ndims > 0].iterrows() %}
-            request.{{ array_i['arg_name'] }}.data = ({{ array_i.atom_type }} *)((uint8_t *)&request + (uint16_t)request.{{ array_i['arg_name'] }}.data);
+            request.{{ array_i['arg_name'] }}.data = ({{ array_i.atom_type }} *)((uint8_t *)&request + (unsigned int)request.{{ array_i['arg_name'] }}.data);
     {%- endfor %}
     {%- endif -%}
 
