@@ -43,7 +43,7 @@ options(
                url=properties['url'],
                version=properties['version'],
                install_requires=['arduino-helpers>=0.3.post12',
-                                 'arduino-memory', 'c-array-defs>=0.1.post2',
+                                 'arduino-memory', 'c-array-defs>=0.2',
                                  'clang-helpers>=0.3', 'jinja2',
                                  'nadamq>=0.8.post1', 'nanopb-helpers>=0.4',
                                  'pandas>=0.15', 'path-helpers>=0.2',

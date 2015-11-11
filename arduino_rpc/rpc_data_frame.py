@@ -36,17 +36,17 @@ def get_c_commands_header_code(df_sig_info, namespace, extra_header=None,
 namespace {{ namespace }} {
 
 {% for (method_i, method_name, camel_name, arg_count), df_method_i in df_sig_info.groupby(['method_i', 'method_name', 'camel_name', 'arg_count']) %}
-struct {{ camel_name }}Request {
+typedef struct __attribute__((packed)) {
 {%- if arg_count > 0 %}
 {{ '\n'.join('  ' + df_method_i.struct_atom_type + ' ' + df_method_i.arg_name + ';') }}
 {%- endif %}
-};
+} {{ camel_name }}Request;
 
-struct {{ camel_name }}Response {
+typedef struct __attribute__((packed)) {
 {%- if df_method_i.return_atom_type.iloc[0] is not none %}
   {{ df_method_i.return_struct_atom_type.iloc[0] }} result;
 {%- endif %}
-};
+} {{ camel_name }}Response;
 {% endfor %}
 
 {% for i, (method_i, method_name) in df_sig_info.drop_duplicates(subset='method_i')[['method_i', 'method_name']].iterrows() %}
@@ -149,7 +149,7 @@ public:
             /* Copy result to output buffer. */
     {%- if df_method_i.return_ndims.iloc[0] > 0 %}
             /* Result type is an array, so need to do `memcpy` for array data. */
-            uint16_t length = (response.result.length *
+            uint32_t length = (response.result.length *
                                sizeof(response.result.data[0]));
 
             result.data = (uint8_t *)response.result.data;
@@ -171,7 +171,7 @@ public:
           break;
 {% endfor %}
       default:
-        result.length = 0xFFFF;
+        result.length = 0xFFFFFFFF;
         result.data = NULL;
     }
     return result;
@@ -191,7 +191,8 @@ public:
                            extra_footer=extra_footer)
 
 
-def get_python_code(df_sig_info, extra_header=None, extra_footer=None):
+def get_python_code(df_sig_info, extra_header=None, extra_footer=None,
+                    pointer_width=16):
     '''
     Generate Python `Proxy` class, with one method for each corresponding
     method signature in `df_sig_info`.  Each method on the `Proxy` class:
@@ -209,6 +210,17 @@ def get_python_code(df_sig_info, extra_header=None, extra_footer=None):
      - `extra_header`: Extra text to insert before class definition (optional).
      - `extra_footer`: Extra text to insert after class definition (optional).
     '''
+    # TODO: The size of an `*Array` struct depends on the architecture.
+    #
+    # Specifically, on 8-bit AVR processors, addresses are 16-bit, but on
+    # 32-bit processors (e.g., Teensy 3.2 ARM) addresses are 32-bit.  Since one
+    # of the `*Array` struct member variables (i.e., `data`) is a pointer, the
+    # size of the structure differs based on the pointer size for the
+    # architecture.
+    #
+    # How should we handle this?
+    #
+    # Take a pointer bit-width as an argument, `pointer_width=32`.
     template = jinja2.Template(r'''
 import types
 import pandas as pd
@@ -274,7 +286,7 @@ class Proxy(ProxyBase):
                                dtype=[
 {%- for i, (arg_name, ndims, np_atom_type) in df_method_i[['arg_name', 'ndims', 'atom_np_type']].iterrows() -%}
 {%- if ndims > 0 -%}
-        ('{{ arg_name }}_length', 'uint16'), ('{{ arg_name }}_data', 'uint16'), {% else -%}
+        ('{{ arg_name }}_length', 'uint32'), ('{{ arg_name }}_data', 'uint{{ pointer_width }}'), {% else -%}
         ('{{ arg_name }}', '{{ np_atom_type }}'), {% endif %}{% endfor %}])
         payload_data = struct_data.tostring() + array_data
 {%- else %}
@@ -302,10 +314,11 @@ class Proxy(ProxyBase):
 {% endif %}
 '''.strip())
     return template.render(df_sig_info=df_sig_info, extra_header=extra_header,
-                           extra_footer=extra_footer)
+                           extra_footer=extra_footer,
+                           pointer_width=pointer_width)
 
 
-def get_struct_sig_info_frame(df_sig_info):
+def get_struct_sig_info_frame(df_sig_info, pointer_width=16):
     df_sig_info = df_sig_info.copy()
     df_sig_info['struct_atom_type'] = df_sig_info.atom_type
     df_sig_info.loc[df_sig_info.ndims > 0, 'struct_atom_type'] = \
@@ -328,10 +341,22 @@ def get_struct_sig_info_frame(df_sig_info):
     df_sig_info.loc[df_sig_info.arg_count > 0, 'atom_np_type'] = \
         NP_STD_INT_TYPE[df_sig_info.loc[df_sig_info.arg_count > 0,
                                         'atom_type']].values
+    # TODO: The size of an `*Array` struct depends on the architecture.
+    #
+    # Specifically, on 8-bit AVR processors, addresses are 16-bit, but on
+    # 32-bit processors (e.g., Teensy 3.2 ARM) addresses are 32-bit.  Since one
+    # of the `*Array` struct member variables (i.e., `data`) is a pointer, the
+    # size of the structure differs based on the pointer size for the
+    # architecture.
+    #
+    # How should we handle this?
+    #
+    # Take a pointer bit-width as an argument, `pointer_width=16`.
     df_sig_info.loc[df_sig_info.arg_count > 0, 'struct_size'] = \
         (df_sig_info.loc[df_sig_info.arg_count > 0,
                          'struct_atom_type']
-         .map(lambda v: 2 * np.dtype('uint16').itemsize if v.endswith('Array')
+         .map(lambda v: 2 * np.dtype('uint' + str(pointer_width)).itemsize
+              if v.endswith('Array')
               else np.dtype(NP_STD_INT_TYPE[v]).itemsize).values)
     return df_sig_info
 

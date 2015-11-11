@@ -51,6 +51,10 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
         class_name = [class_name]
     assert(len(cpp_header) == len(class_name))
 
+    # Default to 16-bit pointer size (i.e., assume 8-bit AVR Arduino by
+    # default).
+    pointer_width = kwargs.pop('pointer_width', 16)
+
     frames = []
     for header, class_ in zip(cpp_header, class_name):
         try:
@@ -62,7 +66,8 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
 
         df_sig_info = get_clang_methods_frame(node_class, std_types=True)
 
-        frame = get_struct_sig_info_frame(df_sig_info)
+        frame = get_struct_sig_info_frame(df_sig_info,
+                                          pointer_width=pointer_width)
         frame.insert(0, 'header_name', path(header).name)
         frame.insert(1, 'class_name', class_)
         frames.append(frame)
