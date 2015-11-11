@@ -1,6 +1,7 @@
 # coding: utf-8
 import re
 
+import numpy as np
 import pandas as pd
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -115,11 +116,12 @@ def extract_callback_data(df_protobuf, method_name):
     return df_parents, s_field
 
 
-def get_field_value(root, field_descriptor, full_name):
+def get_field_value(root, field_descriptor, full_name, set_default=False):
     '''
     Extract field value from Protocol Buffer message `root`, based on the
     '.'-separated full field name.
 
+    If the field is not set and `set_default=False`, return `nan`.
     If the field is an enumerated type, return name of value.
     '''
     parent = root
@@ -127,15 +129,20 @@ def get_field_value(root, field_descriptor, full_name):
     level_fields = full_name.split('.')
 
     for level in level_fields[:-1]:
+        if not set_default and not parent.HasField(level):
+            return np.NaN
         parent = getattr(parent, level)
-    value = getattr(parent, level_fields[-1])
+    level = level_fields[-1]
+    if not set_default and not parent.HasField(level):
+        return np.NaN
+    value = getattr(parent, level)
     if field_descriptor.enum_type:
-        return field_descriptor.enum_type.values[value].name
+        return field_descriptor.enum_type.values_by_number[value].name
     else:
         return value
 
 
-def resolve_field_values(message):
+def resolve_field_values(message, set_default=False):
     '''
     Return a `pandas.DataFrame`, one row per Protocol Buffer atom field type
     (e.g., `uint32`, `bool`, etc.), indexed by parent message name.
@@ -151,9 +158,11 @@ def resolve_field_values(message):
      - `value`: The value of the corresponding field in the supplied `message`.
     '''
     df_fields = get_protobuf_fields_frame(message)
-    df_fields['full_name'] = (df_fields['parent_name'].map(lambda v: v + '.' if v else '')
+    df_fields['full_name'] = (df_fields['parent_name'].map(lambda v: v + '.'
+                                                           if v else '')
                               + df_fields['field_name'])
     df_fields['value'] = (df_fields[['field_desc', 'full_name']]
-                          .apply(lambda v: get_field_value(message, *v.values),
+                          .apply(lambda v: get_field_value(message, *v.values,
+                                                           set_default=set_default),
                                  axis=1))
     return df_fields.set_index('parent_name')
