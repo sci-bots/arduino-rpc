@@ -341,7 +341,8 @@ def get_struct_sig_info_frame(df_sig_info, pointer_width=16):
     df_sig_info.loc[df_sig_info.arg_count > 0, 'atom_np_type'] = \
         NP_STD_INT_TYPE[df_sig_info.loc[df_sig_info.arg_count > 0,
                                         'atom_type']].values
-    # TODO: The size of an `*Array` struct depends on the architecture.
+
+    # __N.B.,__ The size of an `*Array` struct depends on the architecture.
     #
     # Specifically, on 8-bit AVR processors, addresses are 16-bit, but on
     # 32-bit processors (e.g., Teensy 3.2 ARM) addresses are 32-bit.  Since one
@@ -349,13 +350,14 @@ def get_struct_sig_info_frame(df_sig_info, pointer_width=16):
     # size of the structure differs based on the pointer size for the
     # architecture.
     #
-    # How should we handle this?
-    #
-    # Take a pointer bit-width as an argument, `pointer_width=16`.
+    # We handle this by taking a pointer bit-width as an argument,
+    # default `pointer_width=16`.
     df_sig_info.loc[df_sig_info.arg_count > 0, 'struct_size'] = \
         (df_sig_info.loc[df_sig_info.arg_count > 0,
                          'struct_atom_type']
-         .map(lambda v: 2 * np.dtype('uint' + str(pointer_width)).itemsize
+         .map(lambda v:
+              np.dtype('uint32').itemsize +  # *Array.length
+              np.dtype('uint' + str(pointer_width)).itemsize  # *Array.data
               if v.endswith('Array')
               else np.dtype(NP_STD_INT_TYPE[v]).itemsize).values)
     return df_sig_info
