@@ -7,7 +7,7 @@ from .dtypes import NP_STD_INT_TYPE, STD_ARRAY_TYPES
 
 
 def get_c_commands_header_code(df_sig_info, namespace, extra_header=None,
-                               extra_footer=None):
+                               extra_footer=None, **kwargs):
     # TODO: Update doc string to reflect generating commands header
     '''
     Generate C++ command processor header code, which decodes a command from an
@@ -63,11 +63,12 @@ static const int CMD_{{ method_name.upper() }} = {{ '0x%02x' % method_i }};
 '''.strip())
     return template.render(df_sig_info=df_sig_info, namespace=namespace,
                            extra_header=extra_header,
-                           extra_footer=extra_footer)
+                           extra_footer=extra_footer, **kwargs)
 
 
 def get_c_command_processor_header_code(df_sig_info, namespace,
-                                        extra_header=None, extra_footer=None):
+                                        extra_header=None, extra_footer=None,
+                                        **kwargs):
     # TODO: Update doc string to reflect generating command processor header
     '''
     Generate C++ command processor header code, which decodes a command from an
@@ -188,7 +189,7 @@ public:
 '''.strip())
     return template.render(df_sig_info=df_sig_info, namespace=namespace,
                            extra_header=extra_header,
-                           extra_footer=extra_footer)
+                           extra_footer=extra_footer, **kwargs)
 
 
 def get_python_code(df_sig_info, extra_header=None, extra_footer=None,
