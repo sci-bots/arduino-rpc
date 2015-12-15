@@ -1,8 +1,7 @@
-from pprint import pprint
 import sys
 
-from paver.setuputils import setup, install_distutils_tasks
-from paver.easy import task, needs, path, environment, sh, cmdopts, options
+from paver.setuputils import install_distutils_tasks
+from paver.easy import task, needs, options
 
 sys.path.insert(0, '.')
 from arduino_rpc.pavement_base import *
@@ -42,7 +41,7 @@ options(
                author=properties['author'],
                url=properties['url'],
                version=properties['version'],
-               install_requires=['arduino-helpers>=0.3.post12',
+               install_requires=['arduino-helpers>=0.3.post18',
                                  'arduino-memory', 'c-array-defs>=0.2',
                                  'clang-helpers>=0.3', 'jinja2',
                                  'nadamq>=0.8.post1', 'nanopb-helpers>=0.4',
