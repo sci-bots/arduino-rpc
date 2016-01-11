@@ -23,6 +23,23 @@ TYPE_CALLABLE_MAP = {
     FieldDescriptor.TYPE_ENUM: 'int32_t'}
 
 
+PYTYPE_MAP = {
+    FieldDescriptor.TYPE_DOUBLE: float,
+    FieldDescriptor.TYPE_FLOAT: float,
+    FieldDescriptor.TYPE_INT32: int,
+    FieldDescriptor.TYPE_INT64: int,
+    FieldDescriptor.TYPE_UINT32: int,
+    FieldDescriptor.TYPE_UINT64: int,
+    FieldDescriptor.TYPE_SINT32: int,
+    FieldDescriptor.TYPE_SINT64: int,
+    FieldDescriptor.TYPE_FIXED32: int,
+    FieldDescriptor.TYPE_FIXED64: int,
+    FieldDescriptor.TYPE_SFIXED32: int,
+    FieldDescriptor.TYPE_SFIXED64: int,
+    FieldDescriptor.TYPE_BOOL: bool,
+    FieldDescriptor.TYPE_ENUM: int }
+
+
 def get_protobuf_fields_frame(message_type):
     '''
     Return a `pandas.DataFrame` with one row per field/tag in the specified
