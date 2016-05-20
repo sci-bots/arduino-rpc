@@ -20,3 +20,4 @@ dist/*
 .project
 .pydevproject
 arduino_rpc/Arduino/library/*
+.idea

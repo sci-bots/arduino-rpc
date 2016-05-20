@@ -20,7 +20,8 @@ TYPE_CALLABLE_MAP = {
     FieldDescriptor.TYPE_SFIXED32: 'int32_t',
     FieldDescriptor.TYPE_SFIXED64: 'int64_t',
     FieldDescriptor.TYPE_BOOL: 'bool',
-    FieldDescriptor.TYPE_ENUM: 'int32_t'}
+    FieldDescriptor.TYPE_ENUM: 'int32_t'
+}
 
 
 PYTYPE_MAP = {
@@ -37,8 +38,9 @@ PYTYPE_MAP = {
     FieldDescriptor.TYPE_SFIXED32: int,
     FieldDescriptor.TYPE_SFIXED64: int,
     FieldDescriptor.TYPE_BOOL: bool,
-    FieldDescriptor.TYPE_ENUM: int }
-
+    FieldDescriptor.TYPE_ENUM: int,
+    FieldDescriptor.TYPE_STRING: str,
+}
 
 def get_protobuf_fields_frame(message_type):
     '''
