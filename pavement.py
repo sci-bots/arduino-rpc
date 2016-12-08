@@ -28,15 +28,15 @@ properties = dict(
       author='Christian Fobel',
       author_email='christian@fobel.net')
 
-
 install_distutils_tasks()
 
 options(
     rpc_module=arduino_rpc,
     LIB_PROPERTIES=properties,
     setup=dict(name=properties['package_name'].replace('_', '-'),
-               description='\n'.join([properties['short_description'],
-                                      properties['long_description']]),
+               description=properties['short_description'],
+               long_description='\n'.join([properties['short_description'],
+                                           properties['long_description']]),
                author_email=properties['author_email'],
                author=properties['author'],
                url=properties['url'],
