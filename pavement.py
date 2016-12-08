@@ -59,3 +59,11 @@ options(
 def sdist():
     """Override sdist to make sure that our setup.py is generated."""
     pass
+
+
+@task
+@needs('generate_setup', 'minilib', 'build_arduino_library',
+       'setuptools.command.bdist_wheel')
+def bdist_wheel():
+    """Override bdist_wheel to make sure that our setup.py is generated."""
+    pass
