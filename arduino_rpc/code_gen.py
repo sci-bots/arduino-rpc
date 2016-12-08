@@ -83,9 +83,16 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
                                     .groupby(['class_name',
                                               'method_name'])['index']
                                     .transform(lambda x: x.iloc[0]))
-    df_unique_methods = df_struct_sig_info[df_struct_sig_info.index_0 ==
-                                           df_last_i[df_struct_sig_info
-                                                     .method_name]].copy()
+    # Only include rows from `df_struct_sig_info` frame corresponding to the
+    # last occurrence of each method.
+    # Use `.values` since mask is comparing two `Series` objects with different
+    # indexes, which causes an exception in `pandas>=0.19.0`.
+    #
+    # See [this issue] for more info.
+    # [1]: https://github.com/wheeler-microfluidics/arduino-rpc/issues/14
+    last_occurrence_mask = (df_struct_sig_info.index_0.values ==
+                            df_last_i[df_struct_sig_info.method_name].values)
+    df_unique_methods = df_struct_sig_info.loc[last_occurrence_mask].copy()
 
     class_i = pd.Series(df_unique_methods.class_name.unique())
     class_i = pd.Series(class_i.index, index=class_i)
