@@ -13,14 +13,14 @@ package:
 
 requirements:
   build:
-    - arduino-helpers >=0.3.post18
-    - arduino-memory >=0.1.post3
+    - arduino-helpers >=0.4
+    - arduino-memory >=0.2
     - c-array-defs >=0.2
     - clang-helpers >=0.3
     - future
     - jinja2
-    - nadamq >=0.8
-    - nanopb-helpers >=0.4.post1
+    - nadamq >=0.10
+    - nanopb-helpers >=0.5
     - pandas >=0.15
     - path_helpers >=0.2
     - paver
@@ -29,13 +29,13 @@ requirements:
     - serial-device >=0.2
 
   run:
-    - arduino-helpers >=0.3.post18
-    - arduino-memory >=0.1.post3
+    - arduino-helpers >=0.4
+    - arduino-memory >=0.2
     - c-array-defs >=0.2
     - clang-helpers >=0.3
     - jinja2
-    - nadamq >=0.8
-    - nanopb-helpers >=0.4.post1
+    - nadamq >=0.10
+    - nanopb-helpers >=0.5
     - pandas >=0.15
     - path_helpers >=0.2
     - serial-device >=0.2
