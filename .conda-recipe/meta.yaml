@@ -1,0 +1,45 @@
+# source will be downloaded prior to filling in jinja templates
+# Example assumes that this folder has setup.py in it
+source:
+  git_url: ../
+
+package:
+  name: arduino-rpc
+{% if GIT_DESCRIBE_NUMBER > '0' %}
+  version: {{ GIT_DESCRIBE_TAG[1:] }}.post{{ GIT_DESCRIBE_NUMBER }}
+{% else %}
+  version: {{ GIT_DESCRIBE_TAG[1:] }}.0
+{% endif %}
+
+requirements:
+  build:
+    - arduino-helpers >=0.3.post18
+    - arduino-memory >=0.1.post3
+    - c-array-defs >=0.2
+    - clang-helpers >=0.3
+    - future
+    - jinja2
+    - nadamq >=0.8
+    - nanopb-helpers >=0.4.post1
+    - pandas >=0.15
+    - path_helpers >=0.2
+    - paver
+    - pip
+    - python 2.7*
+    - serial-device >=0.2
+
+  run:
+    - arduino-helpers >=0.3.post18
+    - arduino-memory >=0.1.post3
+    - c-array-defs >=0.2
+    - clang-helpers >=0.3
+    - jinja2
+    - nadamq >=0.8
+    - nanopb-helpers >=0.4.post1
+    - pandas >=0.15
+    - path_helpers >=0.2
+    - serial-device >=0.2
+
+about:
+  home: https://github.com/wheeler-microfluidics/arduino-rpc
+  license: MIT
