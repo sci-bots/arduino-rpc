@@ -1,0 +1,23 @@
+environment:
+  GIT_REPOSITORY: https://github.com/wheeler-microfluidics/arduino-rpc.git
+  matrix:
+    - PYTHON_VERSION: 2.7
+      MINICONDA: C:\Miniconda
+      PYTHON_ARCH: "32"
+
+version: '1.0.{build}'
+
+init:
+  - "ECHO %PYTHON_VERSION% %MINICONDA%"
+
+install:
+  - git clone --depth=1 https://github.com/sci-bots/sci-bots-configs.git
+  - .\sci-bots-configs\appveyor-install.bat
+
+# Handle build and tests using conda (defined in .conda-recipe/meta.yaml)
+build: false
+test_script:
+  - echo Build Complete
+
+after_test:
+  - powershell -executionpolicy remotesigned -File .\sci-bots-configs\appveyor-after-test.ps1
