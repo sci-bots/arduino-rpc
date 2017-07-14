@@ -11,6 +11,9 @@ init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
 
 install:
+  # Exit if no .conda-recipe folder
+  - IF NOT EXIST .conda-recipe exit 1
+
   - git clone --depth=1 https://github.com/sci-bots/sci-bots-configs.git
   - .\sci-bots-configs\appveyor-install.bat
 
