@@ -5,7 +5,7 @@ environment:
       MINICONDA: C:\Miniconda
       PYTHON_ARCH: "32"
 
-version: "- powershell $(git describe --tags).split('-')[0..1] -join '.'"
+version: '1.0.{build}'
 
 init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
