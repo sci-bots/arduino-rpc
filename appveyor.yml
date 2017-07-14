@@ -5,15 +5,15 @@ environment:
       MINICONDA: C:\Miniconda
       PYTHON_ARCH: "32"
 
-version: '1.7.34'
+version: '1.7.35'
 
 init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
 
 install:
   # Exit if no .conda-recipe folder
+  - ps: if([System.IO.File]::Exists(".conda-recipe")){Add-AppveyorMessage -Message "No Conda Recipe Found"; -Category "Error"; throw}
   - IF NOT EXIST .conda-recipe exit 1
-
   - git clone --depth=1 https://github.com/sci-bots/sci-bots-configs.git
   - .\sci-bots-configs\appveyor-install.bat
 
