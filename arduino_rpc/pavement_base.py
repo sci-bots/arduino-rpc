@@ -61,8 +61,11 @@ def verify_library_directory(options):
         output_dir = path(getattr(cmd_opts, 'lib_out_dir', default_lib_dir))
     else:
         output_dir = default_lib_dir
-    name = options.LIB_PROPERTIES['package_name'].replace('-', '_')
-    camel_name = underscore_to_camelcase(name)
+    if 'camelcase_name' in options.LIB_PROPERTIES:
+        camel_name = options.LIB_PROPERTIES['camelcase_name']
+    else:
+        name = options.LIB_PROPERTIES['package_name'].replace('-', '_')
+        camel_name = underscore_to_camelcase(name)
     library_dir = output_dir.joinpath(camel_name)
     library_dir.makedirs_p()
     return library_dir
