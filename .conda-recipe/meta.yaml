@@ -27,6 +27,8 @@ requirements:
     - pip
     - python 2.7*
     - serial-device >=0.2
+    #: .. versionadded:: X.X.X
+    - six
 
   run:
     - arduino-helpers >=0.4
@@ -39,6 +41,8 @@ requirements:
     - pandas >=0.15
     - path_helpers >=0.2
     - serial-device >=0.2
+    #: .. versionadded:: X.X.X
+    - six
 
 about:
   home: https://github.com/wheeler-microfluidics/arduino-rpc
