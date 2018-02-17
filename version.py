@@ -36,6 +36,8 @@ With that setup, a new release can be labelled by simply invoking:
     git tag -s v1.0
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
 __author__ = ('Douglas Creager <dcreager@dcreager.net>',
               'Michal Nazarewicz <mina86@mina86.com>')
 __license__ = 'This file is placed into the public domain.'
@@ -131,5 +133,5 @@ def getVersion():
 
 
 if __name__ == '__main__':
-    print getVersion()
+    print(getVersion())
 

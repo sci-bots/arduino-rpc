@@ -1,10 +1,14 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
-import types
 
-from path_helpers import path
-import pandas as pd
 from clang_helpers import open_cpp_source, extract_class_declarations
 from clang_helpers.data_frame import get_clang_methods_frame
+from path_helpers import path
+from six.moves import zip
+import pandas as pd
+import six
+
 from .rpc_data_frame import get_struct_sig_info_frame
 
 
@@ -45,9 +49,9 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
        headers and classes provided in the `cpp_header` argument and the
        `class_name` argument, respectively.
     '''
-    if isinstance(cpp_header, types.StringTypes):
+    if isinstance(cpp_header, six.string_types):
         cpp_header = [cpp_header]
-    if isinstance(class_name, types.StringTypes):
+    if isinstance(class_name, six.string_types):
         class_name = [class_name]
     assert(len(cpp_header) == len(class_name))
 
@@ -59,8 +63,9 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
     for header, class_ in zip(cpp_header, class_name):
         try:
             root = open_cpp_source(header, *args, **kwargs)
-        except:
-            from IPython import embed; embed()
+        except Exception:
+            from IPython import embed
+            embed()
             raise
         node_class = extract_class_declarations(root)[class_]
 
@@ -78,11 +83,11 @@ def get_multilevel_method_sig_frame(cpp_header, class_name, *args, **kwargs):
     # occurrence in the table for each method.
     df_last_i = (df_struct_sig_info.loc[(df_struct_sig_info.arg_count == 0) |
                                         (df_struct_sig_info.arg_i == 0)]
-                .reset_index().groupby('method_name').nth(-1)['index'])
+                 .reset_index().groupby('method_name').nth(-1)['index'])
     df_struct_sig_info['index_0'] = (df_struct_sig_info.reset_index()
-                                    .groupby(['class_name',
-                                              'method_name'])['index']
-                                    .transform(lambda x: x.iloc[0]))
+                                     .groupby(['class_name',
+                                               'method_name'])['index']
+                                     .transform(lambda x: x.iloc[0]))
     # Only include rows from `df_struct_sig_info` frame corresponding to the
     # last occurrence of each method.
     # Use `.values` since mask is comparing two `Series` objects with different
@@ -143,6 +148,6 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
         output = out_file.open('wb')
 
     try:
-        print >> output, f_get_code(df_methods)
+        print(f_get_code(df_methods), file=output)
     finally:
         output.close()

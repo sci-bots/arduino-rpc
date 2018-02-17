@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from collections import OrderedDict
 
 import jinja2
@@ -390,4 +392,4 @@ def generate_rpc_buffer_header(output_dir, **kwargs):
         with output_file.open('wb') as output:
             t = jinja2.Template(template_file.bytes())
             output.write(t.render(**kwargs))
-            print ('Wrote buffer configuration: `%s`' % output_file)
+            print(('Wrote buffer configuration: `%s`' % output_file))

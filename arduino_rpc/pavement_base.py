@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import os
 import shutil
@@ -102,9 +104,9 @@ def copy_existing_headers(options):
     source_dir = options.rpc_module.get_lib_directory()
     output_dir = project_lib_dir.parent
     if source_dir == output_dir:
-        print 'Output library directory is same as source - do not copy.'
+        print('Output library directory is same as source - do not copy.')
     else:
-        print 'Output library directory differs from source - copy.'
+        print('Output library directory differs from source - copy.')
         recursive_overwrite(source_dir, output_dir)
 
 
