@@ -46,5 +46,5 @@ requirements:
     - six
 
 about:
-  home: https://github.com/wheeler-microfluidics/arduino-rpc
+  home: https://github.com/sci-bots/arduino-rpc
   license: MIT
