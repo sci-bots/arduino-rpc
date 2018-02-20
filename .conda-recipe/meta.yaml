@@ -26,7 +26,8 @@ requirements:
     - path_helpers >=0.2
     - paver
     - pip
-    - python 2.7*
+    #: .. versionchanged:: X.X.X
+    - python {{ python }}
     - serial-device >=0.2
     #: .. versionadded:: X.X.X
     - six
@@ -41,6 +42,8 @@ requirements:
     - nanopb-helpers >=0.5
     - pandas >=0.15
     - path_helpers >=0.2
+    #: .. versionchanged:: X.X.X
+    - python {{ python }}
     - serial-device >=0.2
     #: .. versionadded:: X.X.X
     - six

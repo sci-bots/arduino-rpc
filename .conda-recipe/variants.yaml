@@ -1,0 +1,9 @@
+# This file may be passed to `conda-build` using the `-m` flag to build a
+# separate package for each of the listed Python versions.
+#
+# See [here][1] for more details.
+#
+# [1]: https://conda.io/docs/user-guide/tasks/build-packages/variants.html#using-variants-with-the-conda-build-api
+python:
+  - 2.7
+  - 3.6
