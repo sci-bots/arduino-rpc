@@ -30,10 +30,10 @@ requirements:
     - path_helpers >=0.2
     - paver
     - pip
-    #: .. versionchanged:: X.X.X
+    #: .. versionchanged:: 1.11
     - python {{ python }}
     - serial-device >=0.2
-    #: .. versionadded:: X.X.X
+    #: .. versionadded:: 1.11
     - six
 
   run:
@@ -46,10 +46,10 @@ requirements:
     - nanopb-helpers >=0.5
     - pandas >=0.15
     - path_helpers >=0.2
-    #: .. versionchanged:: X.X.X
+    #: .. versionchanged:: 1.11
     - python {{ python }}
     - serial-device >=0.2
-    #: .. versionadded:: X.X.X
+    #: .. versionadded:: 1.11
     - six
 
 build:

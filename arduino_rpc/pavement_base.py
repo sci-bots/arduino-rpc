@@ -77,7 +77,7 @@ def verify_library_directory(options):
 @cmdopts(LIB_CMDOPTS, share_with=LIB_GENERATE_TASKS)
 def generate_arduino_library_properties(options):
     '''
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 1.11
         Read template file and write library properties file as text (not
         binary) to support Python 3.
     '''
