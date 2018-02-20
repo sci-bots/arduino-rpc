@@ -78,7 +78,8 @@ def verify_library_directory(options):
 def generate_arduino_library_properties(options):
     '''
     .. versionchanged:: X.X.X
-        Read template file as text (not binary) to support Python 3.
+        Read template file and write library properties file as text (not
+        binary) to support Python 3.
     '''
     import jinja2
     import arduino_rpc
@@ -97,7 +98,7 @@ def generate_arduino_library_properties(options):
     version = re.sub(r'[^\d\.]+', '',
                      options.LIB_PROPERTIES.get('version', '0.1.0'))
     version = re.sub(r'^([^\.]+.[^\.]+.[^\.]+)\..*', r'\1', version)
-    with library_properties.open('wb') as output:
+    with library_properties.open('w') as output:
         output.write(template.render(camel_name=camel_name,
                                      lib_version=version,
                                      **options.LIB_PROPERTIES))
