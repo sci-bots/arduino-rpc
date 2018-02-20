@@ -1,9 +1,9 @@
 include README.md
-include RELEASE-VERSION
-include version.py
 include pavement.py
 include paver-minilib.zip
 include setup.py
 recursive-include arduino_rpc *
 recursive-exclude arduino_rpc *~
 recursive-exclude arduino_rpc *.pyc
+include versioneer.py
+include arduino_rpc/_version.py
