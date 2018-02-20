@@ -76,14 +76,20 @@ def verify_library_directory(options):
 @task
 @cmdopts(LIB_CMDOPTS, share_with=LIB_GENERATE_TASKS)
 def generate_arduino_library_properties(options):
+    '''
+    .. versionchanged:: X.X.X
+        Read template file as text (not binary) to support Python 3.
+    '''
     import jinja2
     import arduino_rpc
 
     from clang_helpers.data_frame import underscore_to_camelcase
 
-    template = jinja2.Template(open(arduino_rpc.get_library_directory()
-                                    .joinpath('library.properties.t'),
-                                    'rb').read())
+    with (arduino_rpc.get_library_directory()
+          .joinpath('library.properties.t').open('r')) as input_:
+        template_str = input_.read()
+
+    template = jinja2.Template(template_str)
     library_dir = verify_library_directory(options)
     library_properties = library_dir.joinpath('library.properties')
     name = options.LIB_PROPERTIES['package_name']
