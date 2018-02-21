@@ -145,7 +145,7 @@ def write_code(cpp_header, class_name, out_file, f_get_code, *args, **kwargs):
         # Write code to `stdout`.
         output = sys.stdout
     else:
-        output = out_file.open('wb')
+        output = out_file.open('w')
 
     try:
         print(f_get_code(df_methods), file=output)
