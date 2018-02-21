@@ -69,7 +69,7 @@ build:
     # Generate `setup.py` from `pavement.py` definition.
     - python -m paver generate_setup
     # Install source directory as Python package.
-    - python setup.py install --single-version-externally-managed --record record.txt
+    - python -B setup.py install --single-version-externally-managed --record record.txt
 
 about:
   home: https://github.com/sci-bots/arduino-rpc
