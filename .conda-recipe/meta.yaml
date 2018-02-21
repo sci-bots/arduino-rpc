@@ -1,3 +1,7 @@
+{% set PKG_NAME = 'arduino-rpc' %}
+{% set LIB_NAME = 'ArduinoRpc' %}
+{% set MODULE_NAME = PKG_NAME.replace('-', '_') %}
+
 {% if GIT_DESCRIBE_NUMBER > '0' %}
 {% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] + '.post' + GIT_DESCRIBE_NUMBER %}
 {% else %}
@@ -9,7 +13,7 @@ source:
   git_url: ../
 
 package:
-  name: arduino-rpc
+  name: {{ PKG_NAME }}
   version: {{ GIT_VERSION }}
 
 requirements:
@@ -47,6 +51,25 @@ requirements:
     - serial-device >=0.2
     #: .. versionadded:: X.X.X
     - six
+
+build:
+  script:
+    # Generate Arduino `library.properties` file
+    - python -m paver generate_arduino_library_properties
+    # Copy Arduino library to Conda include directory
+    - python -c
+        "import os.path; import os; import shutil;
+        lib_src_dir = os.path.join(os.environ['SRC_DIR'], '{{ MODULE_NAME }}',
+                                   'Arduino', 'library', '{{ LIB_NAME }}');
+        install_dir = os.path.join(os.environ['PREFIX'],
+                                   'Library',  # [win]
+                                   'include', 'Arduino', '{{ LIB_NAME }}');
+        shutil.copytree(lib_src_dir, install_dir);
+        "
+    # Generate `setup.py` from `pavement.py` definition.
+    - python -m paver generate_setup
+    # Install source directory as Python package.
+    - python setup.py install --single-version-externally-managed --record record.txt
 
 about:
   home: https://github.com/sci-bots/arduino-rpc
