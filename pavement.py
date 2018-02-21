@@ -1,18 +1,17 @@
-import sys
+from __future__ import absolute_import
 
 from paver.setuputils import install_distutils_tasks
 from paver.easy import task, needs, options
 
-sys.path.insert(0, '.')
 from arduino_rpc.pavement_base import *
-import version
 import arduino_rpc
+import versioneer
 
 
 properties = dict(
       package_name='arduino_rpc',
-      version=version.getVersion(),
       url='http://github.com/wheeler-microfluidics/arduino_rpc.git',
+      version=versioneer.get_version(),
       short_description='Code generation for memory-efficient '
       'remote-procedure-calls between a host CPU (Python) and a device (C++) '
       '(e.g., Arduino).',
@@ -34,13 +33,14 @@ options(
     rpc_module=arduino_rpc,
     LIB_PROPERTIES=properties,
     setup=dict(name=properties['package_name'].replace('_', '-'),
+               version=versioneer.get_version(),
+               cmdclass=versioneer.get_cmdclass(),
                description=properties['short_description'],
                long_description='\n'.join([properties['short_description'],
                                            properties['long_description']]),
                author_email=properties['author_email'],
                author=properties['author'],
                url=properties['url'],
-               version=properties['version'],
                install_requires=['arduino-helpers>=0.3.post18',
                                  'arduino-memory>=0.1.post3',
                                  'c-array-defs>=0.2', 'clang-helpers>=0.3',

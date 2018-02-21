@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import re
 import os
 import shutil
@@ -74,14 +76,21 @@ def verify_library_directory(options):
 @task
 @cmdopts(LIB_CMDOPTS, share_with=LIB_GENERATE_TASKS)
 def generate_arduino_library_properties(options):
+    '''
+    .. versionchanged:: 1.11
+        Read template file and write library properties file as text (not
+        binary) to support Python 3.
+    '''
     import jinja2
     import arduino_rpc
 
     from clang_helpers.data_frame import underscore_to_camelcase
 
-    template = jinja2.Template(open(arduino_rpc.get_library_directory()
-                                    .joinpath('library.properties.t'),
-                                    'rb').read())
+    with (arduino_rpc.get_library_directory()
+          .joinpath('library.properties.t').open('r')) as input_:
+        template_str = input_.read()
+
+    template = jinja2.Template(template_str)
     library_dir = verify_library_directory(options)
     library_properties = library_dir.joinpath('library.properties')
     name = options.LIB_PROPERTIES['package_name']
@@ -89,7 +98,7 @@ def generate_arduino_library_properties(options):
     version = re.sub(r'[^\d\.]+', '',
                      options.LIB_PROPERTIES.get('version', '0.1.0'))
     version = re.sub(r'^([^\.]+.[^\.]+.[^\.]+)\..*', r'\1', version)
-    with library_properties.open('wb') as output:
+    with library_properties.open('w') as output:
         output.write(template.render(camel_name=camel_name,
                                      lib_version=version,
                                      **options.LIB_PROPERTIES))
@@ -102,9 +111,9 @@ def copy_existing_headers(options):
     source_dir = options.rpc_module.get_lib_directory()
     output_dir = project_lib_dir.parent
     if source_dir == output_dir:
-        print 'Output library directory is same as source - do not copy.'
+        print('Output library directory is same as source - do not copy.')
     else:
-        print 'Output library directory differs from source - copy.'
+        print('Output library directory differs from source - copy.')
         recursive_overwrite(source_dir, output_dir)
 
 

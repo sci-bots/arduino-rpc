@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 from collections import OrderedDict
 
 import jinja2
@@ -365,6 +367,13 @@ def get_struct_sig_info_frame(df_sig_info, pointer_width=16):
 
 
 def generate_rpc_buffer_header(output_dir, **kwargs):
+    '''
+    .. versionchanged:: X.X.X
+        Add support for Python 3.  Specifically, use
+        :meth:`path_helpers.path.text` method instead of
+        :meth:`path_helpers.path.bytes` and open output file for writing in
+        text mode.
+    '''
     import warnings
 
     source_dir = kwargs.pop('source_dir', get_library_directory())
@@ -387,7 +396,7 @@ def generate_rpc_buffer_header(output_dir, **kwargs):
         warnings.warn('Skipping generation of buffer configuration since file '
                       'already exists: `%s`' % output_file)
     else:
-        with output_file.open('wb') as output:
-            t = jinja2.Template(template_file.bytes())
+        with output_file.open('w') as output:
+            t = jinja2.Template(template_file.text())
             output.write(t.render(**kwargs))
-            print ('Wrote buffer configuration: `%s`' % output_file)
+            print(('Wrote buffer configuration: `%s`' % output_file))

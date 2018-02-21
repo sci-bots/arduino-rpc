@@ -1,9 +1,11 @@
 # coding: utf-8
+from __future__ import absolute_import
 import re
 
 import numpy as np
 import pandas as pd
 from google.protobuf.descriptor import FieldDescriptor
+import six
 
 
 TYPE_CALLABLE_MAP = {
@@ -62,7 +64,7 @@ def get_protobuf_fields_frame(message_type):
     frames = []
 
     def _frames(root, parent_field=None):
-        atom_fields = [(n, f) for n, f in root.fields_by_name.iteritems()
+        atom_fields = [(n, f) for n, f in six.iteritems(root.fields_by_name)
                        if not f.type == f.TYPE_MESSAGE]
         if atom_fields:
             frame = pd.DataFrame(atom_fields,
@@ -75,7 +77,7 @@ def get_protobuf_fields_frame(message_type):
             frame.insert(0, 'root_name', message_type.DESCRIPTOR.name)
             frames.append(frame)
 
-        for n, f in root.fields_by_name.iteritems():
+        for n, f in six.iteritems(root.fields_by_name):
             if f.type == f.TYPE_MESSAGE:
                 _frames(f.message_type, parent_field=f)
 
