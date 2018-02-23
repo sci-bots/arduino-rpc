@@ -271,11 +271,11 @@ class Proxy(ProxyBase):
         '{{ arg_name }}', {% endfor -%}],
                                   columns=['length'])
         array_info['start'] = array_info.length.cumsum() - array_info.length
-        array_data = ''.join([
+        array_data = b''.join([
 {%- for arg_name in df_method_i.loc[df_method_i.ndims > 0, 'arg_name'] -%}
         {{ arg_name }}.tostring(), {% endfor -%}])
 {%- else %}
-        array_data = ''
+        array_data = b''
 {%- endif %}
         payload_size = ARG_STRUCT_SIZE + len(array_data)
         struct_data = np.array([(
@@ -294,7 +294,7 @@ class Proxy(ProxyBase):
         payload_data = struct_data.tostring() + array_data
 {%- else %}
         payload_size = 0
-        payload_data = ''
+        payload_data = b''
 {%- endif %}
 
         payload_data = command.tostring() + payload_data
