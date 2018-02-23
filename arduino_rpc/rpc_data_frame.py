@@ -225,6 +225,7 @@ def get_python_code(df_sig_info, extra_header=None, extra_footer=None,
     #
     # Take a pointer bit-width as an argument, `pointer_width=32`.
     template = jinja2.Template(r'''
+from builtins import bytes
 import types
 import pandas as pd
 import numpy as np
@@ -260,6 +261,8 @@ class Proxy(ProxyBase):
         {{ array_i['arg_name'] }} = _translate({{ array_i['arg_name'] }})
         if isinstance({{ array_i['arg_name'] }}, str):
             {{ array_i['arg_name'] }} = map(ord, {{ array_i['arg_name'] }})
+        elif isinstance({{ array_i['arg_name'] }}, bytes):
+            {{ array_i['arg_name'] }} = list(bytes({{ array_i['arg_name'] }}))
         # Argument is an array, so cast to appropriate array type.
         {{ array_i['arg_name'] }} = np.ascontiguousarray({{ array_i['arg_name'] }}, dtype='{{ array_i.atom_np_type }}')
 {%- endfor %}
