@@ -30,46 +30,57 @@ requirements:
     - path_helpers >=0.2
     - paver
     - pip
+    - platformio-helpers >=0.6
     #: .. versionchanged:: 1.11
-    - python {{ python }}
-    - serial-device >=0.2
-    #: .. versionadded:: 1.11
-    - six
-
-  run:
-    - arduino-helpers >=0.4
-    - arduino-memory >=0.2
-    - c-array-defs >=0.2
-    - clang-helpers >=0.3
-    - jinja2
-    - nadamq >=0.10
-    - nanopb-helpers >=0.5
-    - pandas >=0.15
-    - path_helpers >=0.2
-    #: .. versionchanged:: 1.11
-    - python {{ python }}
+    - python
     - serial-device >=0.2
     #: .. versionadded:: 1.11
     - six
 
 build:
+  noarch: python
   script:
     # Generate Arduino `library.properties` file
     - python -m paver generate_arduino_library_properties
     # Copy Arduino library to Conda include directory
     - python -c
-        "import os.path; import os; import shutil;
+        "import os.path; import os; import shutil; import platformio_helpers as pioh;
         lib_src_dir = os.path.join(os.environ['SRC_DIR'], '{{ MODULE_NAME }}',
                                    'Arduino', 'library', '{{ LIB_NAME }}');
-        install_dir = os.path.join(os.environ['PREFIX'],
-                                   'Library',  # [win]
-                                   'include', 'Arduino', '{{ LIB_NAME }}');
+        install_dir = pioh.conda_arduino_include_path().joinpath('{{ LIB_NAME }}');
         shutil.copytree(lib_src_dir, install_dir);
         "
     # Generate `setup.py` from `pavement.py` definition.
     - python -m paver generate_setup
     # Install source directory as Python package.
     - python -B setup.py install --single-version-externally-managed --record record.txt
+
+outputs:
+  - name: {{ PKG_NAME }}-dev
+    noarch: generic
+    files:
+      - share
+  - name: {{ PKG_NAME }}
+    noarch: python
+    files:
+      - Lib/site-packages/{{ MODULE_NAME }}
+    requirements:
+      run:
+        - {{ PKG_NAME }}-dev  {{ pin_compatible('{{ PKG_NAME }}-dev', 'x.x') }}
+        - arduino-helpers >=0.4
+        - arduino-memory >=0.2
+        - c-array-defs >=0.2
+        - clang-helpers >=0.3
+        - jinja2
+        - nadamq >=0.10
+        - nanopb-helpers >=0.5
+        - pandas >=0.15
+        - path_helpers >=0.2
+        #: .. versionchanged:: 1.11
+        - python
+        - serial-device >=0.2
+        #: .. versionadded:: 1.11
+        - six
 
 about:
   home: https://github.com/sci-bots/arduino-rpc
