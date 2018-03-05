@@ -30,7 +30,7 @@ requirements:
     - path_helpers >=0.2
     - paver
     - pip
-    - platformio-helpers
+    - platformio-helpers >=0.6
     #: .. versionchanged:: 1.11
     - python
     - serial-device >=0.2
