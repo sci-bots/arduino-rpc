@@ -30,6 +30,7 @@ requirements:
     - path_helpers >=0.2
     - paver
     - pip
+    - platformio-helpers
     #: .. versionchanged:: 1.11
     - python {{ python }}
     - serial-device >=0.2
@@ -58,12 +59,10 @@ build:
     - python -m paver generate_arduino_library_properties
     # Copy Arduino library to Conda include directory
     - python -c
-        "import os.path; import os; import shutil;
+        "import os.path; import os; import shutil; import platformio_helpers as pioh;
         lib_src_dir = os.path.join(os.environ['SRC_DIR'], '{{ MODULE_NAME }}',
                                    'Arduino', 'library', '{{ LIB_NAME }}');
-        install_dir = os.path.join(os.environ['PREFIX'],
-                                   'Library',  # [win]
-                                   'include', 'Arduino', '{{ LIB_NAME }}');
+        install_dir = pioh.conda_arduino_include_path().joinpath('{{ LIB_NAME }}');
         shutil.copytree(lib_src_dir, install_dir);
         "
     # Generate `setup.py` from `pavement.py` definition.
