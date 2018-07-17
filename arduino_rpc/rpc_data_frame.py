@@ -371,7 +371,7 @@ def get_struct_sig_info_frame(df_sig_info, pointer_width=16):
 
 def generate_rpc_buffer_header(output_dir, **kwargs):
     '''
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 1.11
         Add support for Python 3.  Specifically, use
         :meth:`path_helpers.path.text` method instead of
         :meth:`path_helpers.path.bytes` and open output file for writing in
