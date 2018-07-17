@@ -32,6 +32,7 @@ NP_STD_INT_TYPE = pd.Series(OrderedDict([
     ('int8_t', 'int8'),
     ('uint8_t', 'uint8'),
     ('float', 'float32'),
+    ('double', 'float64'),
     ('int32_t', 'int32'),
     ('int32_t', 'int32'),
     ('int64_t', 'int64'),
